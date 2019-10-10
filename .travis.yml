@@ -26,12 +26,18 @@ jobs:
         #- env
         - docker version
         - docker images
+        - echo "DOCKER_HOST is $DOCKER_HOST'"
       script:
         - date
         - echo $TRAVIS_BUILD_STAGE_NAME
       after_script:
         - date
     - stage: build_image
+      branches:
+        only:
+          - docker
+          - docker-dev
+          - /^v(?:\d+\.)+\d+$/
       before_script:
         - date
         - whoami
@@ -41,6 +47,7 @@ jobs:
         #- env
         - docker version
         - docker images
+        - echo "DOCKER_HOST is $DOCKER_HOST'"
 
         - BIN=$( echo "$TRAVIS_REPO_SLUG" | cut -d '/' -f 2 ) # Get the 'repo_name' from 'owner_name/repo_name'
 
