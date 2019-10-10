@@ -10,13 +10,13 @@ services:
         protocol: udp
         mode: host
     environment:
+      - UDP_LISTEN_ADDR=:26999
+      - UDP_FORWARD_ADDR=0.0.0.0:27500
+      - FORWARD_PROXY_KEY=XXXXX
+      - FORWARD_GAMESERVER_IP=127.0.0.1
+      - FORWARD_GAMESERVER_PORT=27015
       - LOG_LEVEL=DEBUG
-      - LISTEN_ADDR=:26999
-      - FORWARD_ADDR=127.0.0.1:27500
-      - PROXY_KEY=XXXXX
-      - GAMESERVER_IP=127.0.0.1
-      - GAMESERVER_PORT=27015
-    entrypoint: /source_builder_exporter
+    entrypoint: //source-udp-forwarder
     volumes:
       - ./bin/linux_amd64/source-udp-forwarder:/source-udp-forwarder
     network_mode: host
