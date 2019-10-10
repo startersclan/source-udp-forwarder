@@ -30,7 +30,7 @@ jobs:
         - echo "DOCKER_HOST is '${DOCKER_HOST}'"
       script:
         - sudo apt-get install -y git make
-        - make test INSTALL_GIT=true
+        - sudo -s /bin/sh -c 'make test INSTALL_GIT=true' # Force make to run docker under root user
       after_script:
         - date
     - stage: build_image
