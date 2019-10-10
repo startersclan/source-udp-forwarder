@@ -17,23 +17,23 @@ type connection struct {
 }
 
 type Forwarder struct {
-	src          		*net.UDPAddr
-	dst          		*net.UDPAddr
-	client       		*net.UDPAddr
-	listenerConn 		*net.UDPConn
+	src          *net.UDPAddr
+	dst          *net.UDPAddr
+	client       *net.UDPAddr
+	listenerConn *net.UDPConn
 
-	connections			map[string]connection
-	connectionsMutex 	*sync.RWMutex
+	connections      map[string]connection
+	connectionsMutex *sync.RWMutex
 
-	prependStr 	 		string
-	prependStrBytes 	[]byte
+	prependStr      string
+	prependStrBytes []byte
 
-	connectCallback		func(addr string)
-	disconnectCallback	func(addr string)
+	connectCallback    func(addr string)
+	disconnectCallback func(addr string)
 
-	timeout 			time.Duration
+	timeout time.Duration
 
-	closed 				bool
+	closed bool
 }
 
 // DefaultTimeout is the default timeout period of inactivity for convenience
@@ -133,7 +133,7 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 	f.connectionsMutex.RUnlock()
 
 	if !found {
-		log.Debugf("Client connection does not exist. Added connection: %s", addr.String() )
+		log.Debugf("Client connection does not exist. Added connection: %s", addr.String())
 		conn, err := net.ListenUDP("udp", f.client)
 		if err != nil {
 			log.Println("udp-forwarder: failed to dial:", err)
@@ -150,7 +150,7 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 
 		f.connectCallback(addr.String())
 
-		log.Debugf("Forwarding data to: %s", f.dst.String() )
+		log.Debugf("Forwarding data to: %s", f.dst.String())
 		conn.WriteTo(data, f.dst)
 
 		for {
@@ -168,11 +168,11 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 				f.listenerConn.WriteTo(data, addr)
 			}(buf[:n], conn, addr)
 		}
-	}else {
-		log.Debugf("Reusing existing client connection: %s", addr.String() )
+	} else {
+		log.Debugf("Reusing existing client connection: %s", addr.String())
 	}
 
-	log.Debugf("Forwarding data to: %s", f.dst.String() )
+	log.Debugf("Forwarding data to: %s", f.dst.String())
 	conn.udp.WriteTo(data, f.dst)
 
 	shouldChangeTime := false

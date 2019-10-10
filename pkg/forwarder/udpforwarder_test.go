@@ -2,9 +2,7 @@ package udpforwarder
 
 import (
 	"testing"
-
 )
-
 
 func TestForward(t *testing.T) {
 	forwarder, err := Forward(
