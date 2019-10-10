@@ -36,10 +36,6 @@ test_job:
   except:
     - master
   image: docker:18.09.2-git
-  services:
-    - docker:18.09.2-dind
-  variables:
-    GIT_SUBMODULE_STRATEGY: recursive
   script:
     - apk add --no-cache git make
     - make test INSTALL_GIT=true
@@ -52,10 +48,6 @@ build_image_job:
   except:
     - master
   image: docker:18.09.2-git
-  services:
-    - docker:18.09.2-dind
-  variables:
-    GIT_SUBMODULE_STRATEGY: recursive
   script:
     - |
       docker build \
