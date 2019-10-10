@@ -30,10 +30,7 @@ jobs:
         - echo "DOCKER_HOST is '${DOCKER_HOST}'"
       script:
         - sudo apt-get install -y git make
-        - docker run -i --rm $(BUILD_IMAGE) sh -c 'apk add --no-cache git'
-        - echo 'Debug exiting'
-        - exit 1
-        # - make test INSTALL_GIT=true
+        - make test INSTALL_GIT=true
       after_script:
         - date
     - stage: build_image
