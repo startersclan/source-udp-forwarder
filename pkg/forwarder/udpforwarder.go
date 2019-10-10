@@ -133,6 +133,7 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 	f.connectionsMutex.RUnlock()
 
 	if !found {
+		log.Debugf("Client connection does not exist. Added connection: %s", addr.String() )
 		conn, err := net.ListenUDP("udp", f.client)
 		if err != nil {
 			log.Println("udp-forwarder: failed to dial:", err)
@@ -149,6 +150,7 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 
 		f.connectCallback(addr.String())
 
+		log.Debugf("Forwarding data to: %s", f.dst.String() )
 		conn.WriteTo(data, f.dst)
 
 		for {
@@ -166,8 +168,11 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 				f.listenerConn.WriteTo(data, addr)
 			}(buf[:n], conn, addr)
 		}
+	}else {
+		log.Debugf("Reusing existing client connection: %s", addr.String() )
 	}
 
+	log.Debugf("Forwarding data to: %s", f.dst.String() )
 	conn.udp.WriteTo(data, f.dst)
 
 	shouldChangeTime := false
