@@ -42,12 +42,12 @@ func main() {
 	log.Info("Hello Walrus before FullTimestamp=true")
 
 	var (
-		listenAddress            = flag.String("udp.listen-address", getEnv("LISTEN_ADDR", ":26999"), "<IP>:<Port> to listen on for incoming packets.")
-		forwardAddress			 = flag.String("udp.forward-address", getEnv("FORWARD_ADDR", "1.2.3.4:1013"), "<IP>:<Port> to which incoming packets will be forwarded.")
+		listenAddress            = flag.String("udp.listen-address", getEnv("UDP_LISTEN_ADDR", ":26999"), "<IP>:<Port> to listen on for incoming packets.")
+		forwardAddress			 = flag.String("udp.forward-address", getEnv("UDP_FORWARD_ADDR", "1.2.3.4:1013"), "<IP>:<Port> to which incoming packets will be forwarded.")
 
-		proxyKey 				 = flag.String("forward.proxy-key", getEnv("PROXY_KEY", "XXXXX"), "The PROXY_KEY secret defined in HLStatsX:CE settings.")
-		srcIp 					 = flag.String("forward.gameserver-ip", getEnv("GAMESERVER_IP", "127.0.0.1"), "IP that the sent packet should include")
-		srcPort 				 = flag.String("forward.gameserver-port", getEnv("GAMESERVER_PORT", "27015"), "Port that the sent packet should include.")
+		proxyKey 				 = flag.String("forward.proxy-key", getEnv("FORWARD_PROXY_KEY", "XXXXX"), "The PROXY_KEY secret defined in HLStatsX:CE settings.")
+		srcIp 					 = flag.String("forward.gameserver-ip", getEnv("FORWARD_GAMESERVER_IP", "127.0.0.1"), "IP that the sent packet should include")
+		srcPort 				 = flag.String("forward.gameserver-port", getEnv("FORWARD_GAMESERVER_PORT", "27015"), "Port that the sent packet should include.")
 
 		// metricPath               = flag.String("web.telemetry-path", getEnv("WEB_TELEMETRY_PATH", "/metrics"), "Path under which to expose metrics.")
 		logLevel                  = flag.String("log.level", getEnv("LOG_LEVEL", "INFO"), "Output verbose debug information")
