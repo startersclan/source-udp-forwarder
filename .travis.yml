@@ -30,8 +30,6 @@ jobs:
         - date
         - echo $TRAVIS_BUILD_STAGE_NAME
       after_script:
-        - docker logout "$CI_REGISTRY"
-        - docker images
         - date
     - stage: build_image
       before_script:
