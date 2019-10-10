@@ -7,12 +7,13 @@ stages:
   - test
 
 env:
-  # - BIN="$CI_PROJECT_NAME"            # Will be define at runtime, using $TRAVIS_REPO_SLUG
-  - APP_VERSION=$TRAVIS_BRANCH
-  - COMMIT_SHA1="$TRAVIS_BUILD_STAGE_NAME"
-  - BUILD_DIR="TRAVIS_BUILD_DIR/build"
-  - BUILD_CONTEXT=.
-  - IMAGE_PATH="$TRAVIS_REPO_SLUG"d
+  global:
+    # - BIN="$CI_PROJECT_NAME"            # Will be define at runtime, using $TRAVIS_REPO_SLUG
+    - APP_VERSION=$TRAVIS_BRANCH
+    - COMMIT_SHA1="$TRAVIS_COMMIT"
+    - BUILD_DIR="TRAVIS_BUILD_DIR/build"
+    - BUILD_CONTEXT="."
+    - IMAGE_PATH="$TRAVIS_REPO_SLUG"
 
 jobs:
   include:
@@ -26,10 +27,10 @@ jobs:
         #- env
         - docker version
         - docker images
-        - echo "DOCKER_HOST is $DOCKER_HOST'"
+        - echo "DOCKER_HOST is '${DOCKER_HOST}'"
       script:
-        - date
-        - echo $TRAVIS_BUILD_STAGE_NAME
+        - apk add --no-cache git make
+        - make test INSTALL_GIT=true
       after_script:
         - date
     - stage: build_image
@@ -47,11 +48,11 @@ jobs:
         #- env
         - docker version
         - docker images
-        - echo "DOCKER_HOST is $DOCKER_HOST'"
+        - echo "DOCKER_HOST is ${DOCKER_HOST}"
 
         - BIN=$( echo "$TRAVIS_REPO_SLUG" | cut -d '/' -f 2 ) # Get the 'repo_name' from 'owner_name/repo_name'
 
-        - echo "[Stage $CI_JOB_STAGE, Job $CI_JOB_NAME]"
+        - echo "[Stage $TRAVIS_BUILD_STAGE_NAME, Job $TRAVIS_JOB_NAME]"
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       script:
         - |
@@ -62,11 +63,12 @@ jobs:
             --build-arg "VERSION=${APP_VERSION}" \
             --build-arg "COMMIT_SHA1=${COMMIT_SHA1}" \
             --build-arg "BUILD_DATE=$( date '+%Y-%m-%dT%H:%M:%S%z' )" \
-            --tag "${IMAGE_PATH}:$APP_VERSION" \
+            --tag "${IMAGE_PATH}:${APP_VERSION}" \
+            --tag "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT}" \
             --file "${BUILD_DIR}/Dockerfile" \
             "${BUILD_CONTEXT}"
-        - docker push "${IMAGE_PATH}:$APP_VERSION"
-        - docker history --no-trunc "${IMAGE_PATH}:$APP_VERSION"
+        - docker push "${IMAGE_PATH}:${APP_VERSION}"
+        - docker history --no-trunc "${IMAGE_PATH}:${APP_VERSION}"
       after_script:
         - docker logout "$CI_REGISTRY"
         - docker images
