@@ -98,14 +98,11 @@ func main() {
 	}
 
 	forwarder, err := udpforwarder.Forward(*listenAddress, *forwardAddress, udpforwarder.DefaultTimeout, fmt.Sprintf("PROXY Key=%s %s:%sPROXY ", *proxyKey, *srcIp, *srcPort))
-	if err != nil {
+	if forwarder == nil || err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Block forever
 	select {}
-
-	// Stop the forwarder
-	forwarder.Close()
 }
