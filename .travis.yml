@@ -11,7 +11,7 @@ env:
     # - BIN="$CI_PROJECT_NAME"            # Will be define at runtime, using $TRAVIS_REPO_SLUG
     - APP_VERSION=$TRAVIS_BRANCH
     - COMMIT_SHA1="$TRAVIS_COMMIT"
-    - BUILD_DIR="TRAVIS_BUILD_DIR/build"
+    - BUILD_DIR="$TRAVIS_BUILD_DIR/build"
     - BUILD_CONTEXT="."
     - IMAGE_PATH="$TRAVIS_REPO_SLUG"
 
