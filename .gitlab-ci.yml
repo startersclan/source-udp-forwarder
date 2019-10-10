@@ -17,7 +17,7 @@ test_job:
     - tags
   except:
     - master
-  image: docker:18.09.2-git
+  image: docker:18.09.2-dind
   before_script:
     - date
     - whoami
@@ -42,7 +42,7 @@ build_image_job:
     - tags
   except:
     - master
-  image: docker:18.09.2-git
+  image: docker:18.09.2-dind
   before_script:
     - date
     - whoami
