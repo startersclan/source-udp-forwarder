@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  source_builder_exporter:
+    image: alpine:3.8
+    user: ${UID}:${GID}
+    ports:
+      - target: 26999
+        published: 26999
+        protocol: udp
+        mode: host
+    environment:
+      - LOG_LEVEL=DEBUG
+      - LISTEN_ADDR=:26999
+      - FORWARD_ADDR=127.0.0.1:27500
+      - PROXY_KEY=XXXXX
+      - GAMESERVER_IP=127.0.0.1
+      - GAMESERVER_PORT=27015
+    entrypoint: /source_builder_exporter
+    volumes:
+      - ./bin/linux_amd64/source-udp-forwarder:/source-udp-forwarder
+    network_mode: host
+    # leo - We're using host networking. No need to publish ports
+    # ports:
+    #   - 9123:9123
+    # networks:
+    #   - proxy-network
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.docker.network=proxy-network"
+    #   - "traefik.frontend.rule=Host:source-builder-exporter.startersclan.com"
+    #   - "traefik.port=9123"
+    #   - "traefik.frontend.headers.SSLRedirect=true"
+
+networks:
+  proxy-network:
+    external: true
