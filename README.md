@@ -6,7 +6,7 @@ A simple UDP forwarder to the HLStatsX:CE daemon.
 
 ## Agenda
 
-The HLStatsXCE:CE daemon infers a gameserver's IP:PORT from the client socket from which it receives (read) the gameserver's `logaddress_add` logs. This means both the daemon and the gameservers have to run on the same network.
+The HLStatsXCE:CE daemon infers a gameserver's IP:PORT from the client socket from which it receives (reads) the gameserver's `logaddress_add` logs. This means both the daemon and the gameservers have to run on the same network.
 
 Put simply, this UDP forwarder eliminates this need by leveraging on the an already built-in proxy protocol in the daemon - It simply run as a sidecar to the gameserver, receives logs from the gameserver, prepends each log line with a spoofed IP:PORT as well as a secret PROXY_KEY only known by the daemon, and finally sends that log line to the daemon. The daemon reads the gameserver's IP:PORT from each log line, rather than the usual inferring it from the client socket.
 
@@ -26,7 +26,7 @@ Put simply, this UDP forwarder eliminates this need by leveraging on the an alre
 
 - `LOG_LEVEL` to `DEBUG` to ensure it's receiving logs from the gameserver. You can revert this back to `INFO` once everything is working.
 
-3. Watch the daemon logs to ensure it's receiving logs from `source-udp-forwarder`. There should be a `PROXY` event tag attached to each log line received by `source-udp-forwarder`.
+3. Watch the daemon logs to ensure it's receiving logs from `source-udp-forwarder`. There should be a `PROXY` event tag attached to each log line received from `source-udp-forwarder`.
 
 ## Environment variables
 
