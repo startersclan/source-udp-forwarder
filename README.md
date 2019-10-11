@@ -36,6 +36,6 @@ Put simply, this UDP forwarder eliminates this need by leveraging on the an alre
 | `UDP_FORWARD_ADDR`  | `<IP>:<Port>` to which incoming packets will be forwarded. Default value: `1.2.3.4:1013` |
 | `FORWARD_PROXY_KEY`  | The PROXY_KEY secret defined in HLStatsX:CE settings. Default value: `XXXXX` |
 | `FORWARD_GAMESERVER_IP`  | IP that the sent packet should include. Default value: `127.0.0.1` |
-| `FORWARD_GAMESERVER_PORT`  | "Port that the sent packet should include. Default value: `27015` |
+| `FORWARD_GAMESERVER_PORT`  | Port that the sent packet should include. Default value: `27015` |
 | `LOG_LEVEL` | Log level. Defaults to `INFO`. May be one of the following (starting with the most verbose): `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`. Default value: `INFO`|
 | `LOG_FORMAT` | Log format, valid options are `txt` and `json`. Default value: `txt` |
