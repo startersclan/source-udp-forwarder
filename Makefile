@@ -64,7 +64,7 @@ BUILD_DIRS := $(BUILD_GOPATH)				\
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
+OUTBIN = $(PWD)/bin/$(OS)_$(ARCH)/$(BIN)
 
 $(shell mkdir -p $(BUILD_DIRS))
 
