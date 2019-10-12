@@ -83,6 +83,9 @@ func (f *Forwarder) run() {
 	for {
 		buf := make([]byte, bufferSize)
 		n, addr, err := f.listenerConn.ReadFromUDP(buf)
+		if err != nil {
+			return
+		}
 		log.Debugf("Received buf length: %d, string: %s", n, string(buf))
 		log.Debugln(buf)
 
@@ -93,10 +96,6 @@ func (f *Forwarder) run() {
 		newbuf := append([]byte(f.prependStrBytes), buf[:n]...)
 		log.Debugf("newbuf len: %d, string: %s", len(newbuf), string(newbuf))
 		log.Debugln(newbuf)
-
-		if err != nil {
-			return
-		}
 		go f.handle(newbuf, addr)
 	}
 }
