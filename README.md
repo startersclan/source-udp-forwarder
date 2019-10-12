@@ -1,6 +1,6 @@
 # source-udp-forwarder
 
-[dockerhub-badge]: https://img.shields.io/badge/docker%20hub-sourceservers-blue.svg?logo=docker&logoColor=2596EC&color=FFA722&label=&labelColor=&style=popout-square
+![docker-hub-size-badge](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)
 
 A simple UDP forwarder to the HLStatsX:CE daemon.
 
@@ -27,6 +27,12 @@ Put simply, this UDP forwarder eliminates this need by leveraging on the an alre
 - `LOG_LEVEL` to `DEBUG` to ensure it's receiving logs from the gameserver. You can revert this back to `INFO` once everything is working.
 
 3. Watch the daemon logs to ensure it's receiving logs from `source-udp-forwarder`. There should be a `PROXY` event tag attached to each log line received from `source-udp-forwarder`.
+
+## Docker image
+
+```sh
+docker run -it startersclan/source-udp-forwarder
+```
 
 ## Environment variables
 
