@@ -87,16 +87,16 @@ func (f *Forwarder) run() {
 		if err != nil {
 			return
 		}
-		log.Debugf("Received buf length: %d, string: %s", n, string(buf))
-		log.Debugln(buf)
+		log.Debugf("Received buf length: %d, string: %s", n, string(buf[:n]))
+		log.Traceln(buf)
 
-		log.Debugf("prependStrBytes len: %d, string: %s", len(buf), f.prependStr)
-		log.Debugln(f.prependStrBytes)
+		log.Debugf("prependStrBytes len: %d, string: %s", len(buf[:n]), f.prependStr)
+		log.Traceln(f.prependStrBytes)
 
 		log.Debugf("Prepending prependStrBytes to buf")
 		newbuf := append([]byte(f.prependStrBytes), buf[:n]...)
 		log.Debugf("newbuf len: %d, string: %s", len(newbuf), string(newbuf))
-		log.Debugln(newbuf)
+		log.Traceln(newbuf)
 		go f.handle(newbuf, addr)
 	}
 }
@@ -117,7 +117,7 @@ func (f *Forwarder) janitor() {
 		f.connectionsMutex.Lock()
 		for _, k := range keysToDelete {
 			f.connections[k].udp.Close()
-			log.Debugf("Cleaning up unused connection: %s", k)
+			log.Infof("Cleaning up unused connection: %s", k)
 			delete(f.connections, k)
 		}
 		f.connectionsMutex.Unlock()
@@ -134,13 +134,13 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 	f.connectionsMutex.RUnlock()
 
 	if !found {
-		log.Debugf("Client connection does not exist. Added connection: %s", addr.String())
+		log.Infof("Client connection does not exist. Added connection: %s", addr.String())
 		conn, err := net.ListenUDP("udp", f.client)
 		if err != nil {
 			log.Println("udp-forwarder: failed to dial:", err)
 			return
 		}
-		log.Debugf("udp-forwarder: Listening again on %s", addr.String())
+		log.Infof("udp-forwarder: Listening again on %s", addr.String())
 
 		f.connectionsMutex.Lock()
 		f.connections[addr.String()] = connection{
