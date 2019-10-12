@@ -64,12 +64,12 @@ jobs:
             --build-arg "COMMIT_SHA1=${COMMIT_SHA1}" \
             --build-arg "BUILD_DATE=$( date '+%Y-%m-%dT%H:%M:%S%z' )" \
             --tag "${IMAGE_PATH}:${APP_VERSION}" \
-            --tag "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT}" \
+            --tag "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT:0:7}" \
             --tag "${IMAGE_PATH}:latest" \
             --file "${BUILD_DIR}/Dockerfile" \
             "${BUILD_CONTEXT}"
         - docker push "${IMAGE_PATH}:${APP_VERSION}"
-        - docker push "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT}"
+        - docker push "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT:0:7}"
         - docker push "${IMAGE_PATH}:latest"
         - docker history --no-trunc "${IMAGE_PATH}:${APP_VERSION}"
       after_script:
