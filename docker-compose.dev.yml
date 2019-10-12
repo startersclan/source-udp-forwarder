@@ -20,18 +20,3 @@ services:
     volumes:
       - ./bin/linux_amd64/source-udp-forwarder:/source-udp-forwarder
     network_mode: host
-    # leo - We're using host networking. No need to publish ports
-    # ports:
-    #   - 9123:9123
-    # networks:
-    #   - proxy-network
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.docker.network=proxy-network"
-    #   - "traefik.frontend.rule=Host:source-builder-exporter.startersclan.com"
-    #   - "traefik.port=9123"
-    #   - "traefik.frontend.headers.SSLRedirect=true"
-
-networks:
-  proxy-network:
-    external: true
