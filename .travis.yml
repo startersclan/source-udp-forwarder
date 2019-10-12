@@ -29,7 +29,7 @@ jobs:
         - docker images
         - echo "DOCKER_HOST is '${DOCKER_HOST}'"
       script:
-        - sudo apt-get install -y git make
+        - apk add --no-cache git make || sudo apt-get install -y git make
         - sudo -s /bin/sh -c 'make test INSTALL_GIT=true' # Force make to run docker under root user
       after_script:
         - date
@@ -56,22 +56,8 @@ jobs:
         - echo "[Stage $TRAVIS_BUILD_STAGE_NAME, Job $TRAVIS_JOB_NAME]"
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       script:
-        - |
-          docker build \
-            --build-arg "OS=linux" \
-            --build-arg "ARCH=amd64" \
-            --build-arg "BIN=${BIN}" \
-            --build-arg "VERSION=${APP_VERSION}" \
-            --build-arg "COMMIT_SHA1=${COMMIT_SHA1}" \
-            --build-arg "BUILD_DATE=$( date '+%Y-%m-%dT%H:%M:%S%z' )" \
-            --tag "${IMAGE_PATH}:${APP_VERSION}" \
-            --tag "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT:0:7}" \
-            --tag "${IMAGE_PATH}:latest" \
-            --file "${BUILD_DIR}/Dockerfile" \
-            "${BUILD_CONTEXT}"
-        - docker push "${IMAGE_PATH}:${APP_VERSION}"
-        - docker push "${IMAGE_PATH}:${APP_VERSION}-${TRAVIS_COMMIT:0:7}"
-        - docker push "${IMAGE_PATH}:latest"
+        - sudo apt-get install -y git make
+        - REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER" make build-image push-image
         - docker history --no-trunc "${IMAGE_PATH}:${APP_VERSION}"
       after_script:
         - docker logout "$CI_REGISTRY"
