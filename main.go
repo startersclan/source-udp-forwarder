@@ -65,6 +65,9 @@ func main() {
 	}
 
 	log.Printf("Source UDP Forwarder version: %s, build date: %s, Commit SHA: %s, Go version: %s", VERSION, BUILD_DATE, COMMIT_SHA1, runtime.Version())
+	if *showVersion {
+		return
+	}
 
 	*logLevel = strings.ToUpper(*logLevel)
 	switch *logLevel {
@@ -93,10 +96,6 @@ func main() {
 	log.Infof("Forward Proxy Key: %s", re.ReplaceAllString(*proxyKey, "*"))
 	log.Infof("Forward Gameserver IP: %s", *srcIp)
 	log.Infof("Forward Gameserver Port: %s", *srcPort)
-
-	if *showVersion {
-		return
-	}
 
 	forwarder, err := udpforwarder.Forward(*listenAddress, *forwardAddress, udpforwarder.DefaultTimeout, fmt.Sprintf("PROXY Key=%s %s:%sPROXY ", *proxyKey, *srcIp, *srcPort))
 	if forwarder == nil || err != nil {
