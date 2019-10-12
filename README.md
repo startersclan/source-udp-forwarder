@@ -12,19 +12,19 @@ Put simply, this UDP forwarder eliminates this need by leveraging on the an alre
 
 ## How to use
 
-1. Start the gameserver with `logaddress_add 127.0.0.1:26999` for `srcds` or `logaddress_add 127.0.0.1 26999` for `goldsource` servers, to ensure the gameserver send logs to `source-udp-forwarder`.
+1. Start the gameserver with `logaddress_add 127.0.0.1:26999` for `srcds` or `logaddress_add 127.0.0.1 26999` for `hlds` servers, to ensure the gameserver send logs to `source-udp-forwarder`.
 
 2. Start `source-udp-forwarder` as a sidecar to the gameserver (both on localhost), setting the follow environment variables:
 
-- `UDP_FORWARD_ADDR` to the daemon's listening IP:PORT
+    - `UDP_FORWARD_ADDR` to the HLStatsX:CE daemon's IP:PORT
 
-- `FORWARD_PROXY_KEY` to the proxy key secret defined in HLStatsX:CE settings
+    - `FORWARD_PROXY_KEY` to the proxy key secret defined in HLStatsX:CE settings
 
-- `FORWARD_GAMESERVER_IP` to the gameserver's IP as registered in HLStatsX:CE database
+    - `FORWARD_GAMESERVER_IP` to the gameserver's IP as registered in HLStatsX:CE database
 
-- `FORWARD_GAMESERVER_PORT` to the gameserver's PORT as registered in HLStatsX:CE database
+    - `FORWARD_GAMESERVER_PORT` to the gameserver's PORT as registered in HLStatsX:CE database
 
-- `LOG_LEVEL` to `DEBUG` to ensure it's receiving logs from the gameserver. You can revert this back to `INFO` once everything is working.
+    - `LOG_LEVEL` to `DEBUG` to ensure it's receiving logs from the gameserver. You can revert this back to `INFO` once everything is working.
 
 3. Watch the daemon logs to ensure it's receiving logs from `source-udp-forwarder`. There should be a `PROXY` event tag attached to each log line received from `source-udp-forwarder`.
 
