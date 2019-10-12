@@ -1,7 +1,7 @@
 # source-udp-forwarder
 
-![docker-hub-size-badge](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)
-![docker-hub-layers-badge](https://img.shields.io/microbadger/layers/startersclan/source-udp-forwarder/latest)
+[![docker-image-size](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
+[![docker-image-layers](https://img.shields.io/microbadger/layers/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 
 A simple UDP forwarder to the HLStatsX:CE daemon.
 
