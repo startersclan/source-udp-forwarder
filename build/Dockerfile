@@ -1,34 +1,40 @@
 # Build stage
 ARG BUILD_IMAGE
 FROM $BUILD_IMAGE AS builder
-WORKDIR /src
+ARG PWD
+WORKDIR $PWD
 COPY . .
 RUN apk add --no-cache git
 RUN go get -d -v ./...
 
-ARG OS=linux
-ARG ARCH=amd64
-ARG BIN
+ARG BUILD_DIR
+ARG OUTBIN
+ARG OS
+ARG ARCH
 ARG VERSION
 ARG COMMIT_SHA1
 ARG BUILD_DATE
-RUN GOOS="$OS" GOARCH="$ARCH" CGO_ENABLED=0 go build -o "/go/bin/$BIN" -v -ldflags "-s -w -extldflags \"-static\" -X main.VERSION=$VERSION -X main.COMMIT_SHA1=$COMMIT_SHA1 -X main.BUILD_DATE=$BUILD_DATE"
+RUN chmod +x $BUILD_DIR/build.sh && $BUILD_DIR/build.sh
 
 # Final stage
 FROM alpine:3.8 AS final
 
 ARG BIN
+ARG OS
+ARG ARCH
 ARG VERSION
 ARG COMMIT_SHA1
 ARG BUILD_DATE
 LABEL NAME=$BIN
+LABEL OS=$OS
+LABEL ARCH=$ARCH
 LABEL VERSION=$VERSION
 LABEL COMMIT_SHA1=$COMMIT_SHA1
 LABEL BUILD_DATE=$BUILD_DATE
 
 RUN apk --no-cache add ca-certificates
-ARG BIN
-COPY --from=builder /go/bin/$BIN /$BIN
+ARG OUTBIN
+COPY --from=builder $OUTBIN /$BIN
 ENV BIN=$BIN
 ENTRYPOINT /$BIN
 EXPOSE 26999

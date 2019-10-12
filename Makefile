@@ -161,6 +161,10 @@ build-image: $(BUILD_DIRS) guard-OS guard-ARCH
 	@echo "SHA_SHORT: $(SHA_SHORT)"
 	@docker build \
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" 							\
+		--build-arg "PWD=$(PWD)" 											\
+		--build-arg "BUILD_DIR=$(BUILD_DIR)" 								\
+		--build-arg "OUTBIN=$(OUTBIN)" 										\
+		--build-arg "BIN=$(BIN)" 											\
 		--build-arg "OS=$(GOOS)" 											\
 		--build-arg "ARCH=$(GOARCH)" 										\
 		--build-arg "BIN=$(BIN)" 											\
