@@ -44,5 +44,5 @@ if [ -n "$INSTALL_GIT" ]; then
     apk add --no-cache git
 fi
 
-go build -o "$OUTBIN" -ldflags "-s -w -extldflags \"-static\" -X $(go list -m)/pkg/version.VERSION=$VERSION -X $(go list -m)/pkg/version.COMMIT_SHA1=$COMMIT_SHA1 -X $(go list -m)/pkg/version.BUILD_DATE=$BUILD_DATE"
+go build -o "$OUTBIN" -ldflags "-s -w -extldflags \"-static\" -X $(go list -m)/cmd.VERSION=$VERSION -X $(go list -m)/cmd.COMMIT_SHA1=$COMMIT_SHA1 -X $(go list -m)/cmd.BUILD_DATE=$BUILD_DATE"
 
