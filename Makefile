@@ -172,11 +172,12 @@ build-image: $(BUILD_DIRS) guard-OS guard-ARCH
 		--tag "$(IMAGE):latest"								 				\
 		--file "$(BUILD_DIR)/Dockerfile" 									\
 		"."
+	@docker history --no-trunc "$(IMAGE):latest"
 
 push-image: $(BUILD_DIRS)
-	docker push "$(IMAGE):$(VERSION)"
-	docker push "$(IMAGE):$(VERSION)-$(SHA_SHORT)"
-	docker push "$(IMAGE):latest"
+	@docker push "$(IMAGE):$(VERSION)"
+	@docker push "$(IMAGE):$(VERSION)-$(SHA_SHORT)"
+	@docker push "$(IMAGE):latest"
 
 # Example: make shell CMD="-c 'date > datefile'"
 shell: $(BUILD_DIRS)
