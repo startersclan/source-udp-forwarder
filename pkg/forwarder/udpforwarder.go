@@ -3,10 +3,11 @@
 package udpforwarder
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const bufferSize = 1024
@@ -116,6 +117,7 @@ func (f *Forwarder) janitor() {
 		f.connectionsMutex.Lock()
 		for _, k := range keysToDelete {
 			f.connections[k].udp.Close()
+			log.Debugf("Cleaning up unused connection: %s", k)
 			delete(f.connections, k)
 		}
 		f.connectionsMutex.Unlock()
