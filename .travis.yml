@@ -8,7 +8,8 @@ stages:
 
 jobs:
   include:
-    - stage: test
+    - name: Unit Tests
+      stage: test
       before_script:
         - date
         - whoami
@@ -24,7 +25,8 @@ jobs:
         - sudo -s /bin/sh -c 'make test INSTALL_GIT=true' # Force make to run docker under root user
       after_script:
         - date
-    - stage: build_image
+    - name: Build Image
+      stage: build_image
       branches:
         only:
           - master
