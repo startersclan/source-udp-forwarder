@@ -2,14 +2,6 @@ stages:
   - test
   - build_image
 
-variables:
-  BIN: ${CI_PROJECT_NAME}
-  APP_VERSION: $CI_COMMIT_REF_NAME
-  COMMIT_SHA1: ${CI_COMMIT_SHA}
-  BUILD_DIR: $CI_PROJECT_DIR/build
-  BUILD_CONTEXT: .
-  IMAGE_PATH: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
-
 test_job:
   stage: test
   except:

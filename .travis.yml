@@ -6,15 +6,6 @@ stages:
   - build
   - test
 
-env:
-  global:
-    # - BIN="$CI_PROJECT_NAME"            # Will be define at runtime, using $TRAVIS_REPO_SLUG
-    - APP_VERSION=$TRAVIS_BRANCH
-    - COMMIT_SHA1="$TRAVIS_COMMIT"
-    - BUILD_DIR="$TRAVIS_BUILD_DIR/build"
-    - BUILD_CONTEXT="."
-    - IMAGE_PATH="$TRAVIS_REPO_SLUG"
-
 jobs:
   include:
     - stage: test
@@ -50,8 +41,6 @@ jobs:
         - docker version
         - docker images
         - echo "DOCKER_HOST is ${DOCKER_HOST}"
-
-        - BIN=$( echo "$TRAVIS_REPO_SLUG" | cut -d '/' -f 2 ) # Get the 'repo_name' from 'owner_name/repo_name'
 
         - echo "[Stage $TRAVIS_BUILD_STAGE_NAME, Job $TRAVIS_JOB_NAME]"
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
