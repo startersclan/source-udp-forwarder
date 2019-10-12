@@ -40,7 +40,7 @@ func main() {
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.FullTimestamp = true
 	log.SetFormatter(customFormatter)
-	log.Info("Hello Walrus before FullTimestamp=true")
+	// log.Info("Hello Walrus before FullTimestamp=true")
 
 	var (
 		listenAddress  = flag.String("udp.listen-address", getEnv("UDP_LISTEN_ADDR", ":26999"), "<IP>:<Port> to listen on for incoming packets.")
@@ -64,7 +64,7 @@ func main() {
 		log.SetFormatter(&log.TextFormatter{})
 	}
 
-	log.Printf("Source UDP Forwarder %s, build date: %s, Commit SHA: %s, Go version: %s", VERSION, BUILD_DATE, COMMIT_SHA1, runtime.Version())
+	log.Printf("Source UDP Forwarder version: %s, build date: %s, Commit SHA: %s, Go version: %s", VERSION, BUILD_DATE, COMMIT_SHA1, runtime.Version())
 
 	*logLevel = strings.ToUpper(*logLevel)
 	switch *logLevel {
