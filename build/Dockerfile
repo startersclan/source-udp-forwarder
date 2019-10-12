@@ -1,5 +1,6 @@
 # Build stage
-FROM golang:1.12-alpine AS builder
+ARG BUILD_IMAGE
+FROM $BUILD_IMAGE AS builder
 WORKDIR /src
 COPY . .
 RUN apk add --no-cache git
