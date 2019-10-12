@@ -36,6 +36,7 @@ jobs:
     - stage: build_image
       branches:
         only:
+          - master
           - docker
           - docker-dev
           - /^v(?:\d+\.)+\d+$/
