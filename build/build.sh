@@ -45,4 +45,3 @@ if [ -n "$INSTALL_GIT" ]; then
 fi
 
 go build -o "$OUTBIN" -ldflags "-s -w -extldflags \"-static\" -X $(go list -m)/cmd.VERSION=$VERSION -X $(go list -m)/cmd.COMMIT_SHA1=$COMMIT_SHA1 -X $(go list -m)/cmd.BUILD_DATE=$BUILD_DATE"
-

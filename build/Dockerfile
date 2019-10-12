@@ -32,4 +32,3 @@ COPY --from=builder /go/bin/$BIN /$BIN
 ENV BIN=$BIN
 ENTRYPOINT /$BIN
 EXPOSE 26999
-
