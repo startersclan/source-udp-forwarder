@@ -139,7 +139,7 @@ $(OUTBIN): $(BUILD_DIRS)
 			ARCH=$(ARCH)                                        \
 			OS=$(OS)                                            \
 			VERSION=$(VERSION)                                  \
-			COMMIT_SHA1=$(shell git rev-parse HEAD)             \
+			COMMIT_SHA1=$(SHA_SHORT)             				\
 			BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')	\
 			./build/build.sh                                    \
 		";
@@ -165,7 +165,7 @@ build-image: $(BUILD_DIRS) guard-OS guard-ARCH
 		--build-arg "ARCH=$(GOARCH)" 										\
 		--build-arg "BIN=$(BIN)" 											\
 		--build-arg "VERSION=$(VERSION)" 									\
-		--build-arg "COMMIT_SHA1=$(shell git rev-parse HEAD)" 				\
+		--build-arg "COMMIT_SHA1=$(SHA_SHORT)" 								\
 		--build-arg "BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" 	\
 		--tag "$(IMAGE):$(VERSION)" 										\
 		--tag "$(IMAGE):$(VERSION)-$(SHA_SHORT)" 							\
