@@ -1,4 +1,4 @@
-module source-udp-forwarder
+module github.com/startersclan/source-udp-forwarder
 
 go 1.12
 

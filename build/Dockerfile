@@ -1,5 +1,6 @@
 # Build stage
-FROM golang:1.12-alpine AS builder
+ARG BUILD_IMAGE
+FROM $BUILD_IMAGE AS builder
 WORKDIR /src
 COPY . .
 RUN apk add --no-cache git
@@ -30,5 +31,4 @@ ARG BIN
 COPY --from=builder /go/bin/$BIN /$BIN
 ENV BIN=$BIN
 ENTRYPOINT /$BIN
-EXPOSE 9123
-
+EXPOSE 26999

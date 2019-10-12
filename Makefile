@@ -13,19 +13,19 @@
 # limitations under the License.
 
 # The binary to build (just the basename).
-BIN := source-udp-forwarder
-GOOS = linux
-GOARCH = amd64
+BIN := $(shell basename $$PWD)
+GOOS ?= linux
+GOARCH ?= amd64
 
 # Where to push the docker image.
-REGISTRY ?= thockin
+REGISTRY ?= docker.io
+REGISTRY_USER ?= startersclan
 
 # This version-strategy uses git tags to set the version string
-VERSION := $(shell git describe --tags --always --dirty)
-
-#
-# This version-strategy uses a manual value to set the version string
-#VERSION := 1.2.3
+# Get the following from left to right: tag > branch > branch of detached HEAD commit
+VERSION = $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD 2>/dev/null || git name-rev --name-only "$$( git rev-parse --short HEAD )" | sed 's@remotes/origin/@@' | sed 's@~.*@@' )
+# Get the short SHA
+SHA_SHORT = $(shell git rev-parse --short HEAD)
 
 ###
 ### These variables should not need tweaking.
@@ -42,7 +42,7 @@ ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
 BASEIMAGE ?= gcr.io/distroless/static
 
-IMAGE := $(REGISTRY)/$(BIN)
+IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
 BUILD_IMAGE ?= golang:1.12-alpine
@@ -54,6 +54,7 @@ PWD := $$PWD
 BUILD_GOPATH := $(PWD)/.go
 BUILD_GOCACHE := $(PWD)/.cache/go-build
 BUILD_BIN_DIR := $(PWD)/bin
+BUILD_DIR := $(PWD)/build
 
 # Directories that we need created to build/test.
 BUILD_DIRS := $(BUILD_GOPATH)				\
@@ -125,8 +126,8 @@ $(OUTBIN): $(BUILD_DIRS)
 		-i                                                      \
 		--rm                                                    \
 		-u $$(id -u):$$(id -g)                                  \
-		-v $(PWD):$(PWD)                                          \
-		-w $(PWD)                                                 \
+		-v $(PWD):$(PWD)                                        \
+		-w $(PWD)                                               \
 		-v $(BUILD_GOPATH):/go									\
 		-v $(BUILD_GOCACHE):/.cache/go-build					\
 		--env HTTP_PROXY=$(HTTP_PROXY)                          \
@@ -138,7 +139,7 @@ $(OUTBIN): $(BUILD_DIRS)
 			ARCH=$(ARCH)                                        \
 			OS=$(OS)                                            \
 			VERSION=$(VERSION)                                  \
-			COMMIT_SHA1=$(shell git rev-parse HEAD)             \
+			COMMIT_SHA1=$(SHA_SHORT)             				\
 			BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')	\
 			./build/build.sh                                    \
 		";
@@ -147,6 +148,37 @@ $(OUTBIN): $(BUILD_DIRS)
 		date >$@;                              \
 	fi
 
+# Ensure mandatory environment variable is set. E.g. guard-FOO ensures FOO is set.
+guard-%:
+	@if [ -z "$($(*))" ]; then 						\
+		echo "Environment variable $* not set"; 	\
+		exit 1; 									\
+	fi
+
+build-image: $(BUILD_DIRS) guard-OS guard-ARCH
+	@echo "IMAGE: $(IMAGE)"
+	@echo "VERSION: $(VERSION)"
+	@echo "SHA_SHORT: $(SHA_SHORT)"
+	@docker build \
+		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" 							\
+		--build-arg "OS=$(GOOS)" 											\
+		--build-arg "ARCH=$(GOARCH)" 										\
+		--build-arg "BIN=$(BIN)" 											\
+		--build-arg "VERSION=$(VERSION)" 									\
+		--build-arg "COMMIT_SHA1=$(SHA_SHORT)" 								\
+		--build-arg "BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" 	\
+		--tag "$(IMAGE):$(VERSION)" 										\
+		--tag "$(IMAGE):$(VERSION)-$(SHA_SHORT)" 							\
+		--tag "$(IMAGE):latest"								 				\
+		--file "$(BUILD_DIR)/Dockerfile" 									\
+		"."
+	@docker history --no-trunc "$(IMAGE):latest"
+
+push-image: $(BUILD_DIRS)
+	@docker push "$(IMAGE):$(VERSION)"
+	@docker push "$(IMAGE):$(VERSION)-$(SHA_SHORT)"
+	@docker push "$(IMAGE):latest"
+
 # Example: make shell CMD="-c 'date > datefile'"
 shell: $(BUILD_DIRS)
 	@echo "launching a shell in the containerized build environment"
@@ -154,9 +186,9 @@ shell: $(BUILD_DIRS)
 		-ti                                                     \
 		--rm                                                    \
 		-u $$(id -u):$$(id -g)                                  \
-		-v $(PWD):$(PWD)                                          \
-		-w $(PWD)                                                 \
-		-v $(BUILD_GOPATH):/go										\
+		-v $(PWD):$(PWD)                                        \
+		-w $(PWD)                                               \
+		-v $(BUILD_GOPATH):/go									\
 		-v $(BUILD_GOCACHE):/.cache/go-build					\
 		--env HTTP_PROXY=$(HTTP_PROXY)                          \
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                        \
@@ -194,8 +226,8 @@ manifest-list: push
 		--password=$$(gcloud auth print-access-token)     \
 		push from-args                                    \
 		--platforms "$$platforms"                         \
-		--template $(REGISTRY)/$(BIN):$(VERSION)__OS_ARCH \
-		--target $(REGISTRY)/$(BIN):$(VERSION)
+		--template $(IMAGE):$(VERSION)__OS_ARCH \
+		--target $(IMAGE):$(VERSION)
 
 version:
 	@echo $(VERSION)
@@ -206,8 +238,8 @@ test: $(BUILD_DIRS)
 		-i                                                      \
 		--rm                                                    \
 		-u $$(id -u):$$(id -g)                                  \
-		-v $(PWD):$(PWD)                                          \
-		-w $(PWD)                                                 \
+		-v $(PWD):$(PWD)                                        \
+		-w $(PWD)                                               \
 		-v $(BUILD_GOPATH)                                      \
 		-v $(BUILD_GOCACHE)                                     \
 		-v $(BUILD_GOPATH):/go									\
@@ -233,7 +265,6 @@ up: $(DEV_DOCKER_COMPOSE_YML)
 down: $(DEV_DOCKER_COMPOSE_YML)
 	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f $(DEV_DOCKER_COMPOSE_YML) down
 
-
 clean: container-clean bin-clean
 
 container-clean:
@@ -242,4 +273,3 @@ container-clean:
 bin-clean:
 	chmod -R +w $(BUILD_GOPATH) $(BUILD_GOCACHE) $(BUILD_BIN_DIR)
 	rm -rf $(BUILD_GOPATH) $(BUILD_GOCACHE) $(BUILD_BIN_DIR)
-
