@@ -3,10 +3,11 @@
 package udpforwarder
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const bufferSize = 1024
@@ -83,6 +84,9 @@ func (f *Forwarder) run() {
 	for {
 		buf := make([]byte, bufferSize)
 		n, addr, err := f.listenerConn.ReadFromUDP(buf)
+		if err != nil {
+			return
+		}
 		log.Debugf("Received buf length: %d, string: %s", n, string(buf))
 		log.Debugln(buf)
 
@@ -93,10 +97,6 @@ func (f *Forwarder) run() {
 		newbuf := append([]byte(f.prependStrBytes), buf[:n]...)
 		log.Debugf("newbuf len: %d, string: %s", len(newbuf), string(newbuf))
 		log.Debugln(newbuf)
-
-		if err != nil {
-			return
-		}
 		go f.handle(newbuf, addr)
 	}
 }
@@ -117,6 +117,7 @@ func (f *Forwarder) janitor() {
 		f.connectionsMutex.Lock()
 		for _, k := range keysToDelete {
 			f.connections[k].udp.Close()
+			log.Debugf("Cleaning up unused connection: %s", k)
 			delete(f.connections, k)
 		}
 		f.connectionsMutex.Unlock()

@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	udpforwarder "source-udp-forwarder/pkg/forwarder"
 )
@@ -63,7 +64,7 @@ func main() {
 		log.SetFormatter(&log.TextFormatter{})
 	}
 
-	log.Printf("Source Builder Exporter %s, build date: %s, Commit SHA: %s, Go version: %s", VERSION, BUILD_DATE, COMMIT_SHA1, runtime.Version())
+	log.Printf("Source UDP Forwarder %s, build date: %s, Commit SHA: %s, Go version: %s", VERSION, BUILD_DATE, COMMIT_SHA1, runtime.Version())
 
 	*logLevel = strings.ToUpper(*logLevel)
 	switch *logLevel {
@@ -86,12 +87,12 @@ func main() {
 	log.Printf("Log level: %s", *logLevel)
 	log.Printf("Log format: %s", *logFormat)
 
-	log.Printf("Listen Addr: %s", *forwardAddress)
-	log.Printf("Forward Addr: %s", *listenAddress)
+	log.Printf("Listen Addr: %s", *listenAddress)
+	log.Printf("Forward Addr: %s", *forwardAddress)
 	re := regexp.MustCompile(".")
-	log.Infof("Proxy Key: %s", re.ReplaceAllString(*proxyKey, "*"))
-	log.Infof("Gameserver IP: %s", *srcIp)
-	log.Infof("Gameserver Port: %s", *srcPort)
+	log.Infof("Forward Proxy Key: %s", re.ReplaceAllString(*proxyKey, "*"))
+	log.Infof("Forward Gameserver IP: %s", *srcIp)
+	log.Infof("Forward Gameserver Port: %s", *srcPort)
 
 	if *showVersion {
 		return
