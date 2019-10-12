@@ -24,8 +24,8 @@ import (
 var (
 	// VERSION, BUILD_DATE, GIT_COMMIT are filled in by the build script
 	VERSION     = "<Will be added by go build>"
-	BUILD_DATE  = "<Will be added by go build>"
 	COMMIT_SHA1 = "<Will be added by go build>"
+	BUILD_DATE  = "<Will be added by go build>"
 )
 
 func getVersion() string {
