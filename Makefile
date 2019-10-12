@@ -156,6 +156,9 @@ guard-%:
 	fi
 
 build-image: $(BUILD_DIRS) guard-OS guard-ARCH
+	@echo "IMAGE: $(IMAGE)"
+	@echo "VERSION: $(VERSION)"
+	@echo "SHA_SHORT: $(SHA_SHORT)"
 	@docker build \
 		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" 							\
 		--build-arg "OS=$(GOOS)" 											\
