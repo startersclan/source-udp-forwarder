@@ -27,10 +27,6 @@ VERSION = $(shell git symbolic-ref -q --short HEAD 2>/dev/null || git describe -
 # Get the short SHA
 SHA_SHORT = $(shell git rev-parse --short HEAD)
 
-#
-# This version-strategy uses a manual value to set the version string
-#VERSION := 1.2.3
-
 ###
 ### These variables should not need tweaking.
 ###
