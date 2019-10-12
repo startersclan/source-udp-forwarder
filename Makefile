@@ -23,7 +23,7 @@ REGISTRY_USER ?= startersclan
 
 # This version-strategy uses git tags to set the version string
 # Get the following from left to right: tag > branch > branch of detached HEAD commit
-VERSION = $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD 2>/dev/null || git name-rev --name-only "$$( git rev-parse --short HEAD )" | sed 's@remotes/origin/@@' )
+VERSION = $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD 2>/dev/null || git name-rev --name-only "$$( git rev-parse --short HEAD )" | sed 's@remotes/origin/@@')
 # Get the short SHA
 SHA_SHORT = $(shell git rev-parse --short HEAD)
 
@@ -150,9 +150,9 @@ $(OUTBIN): $(BUILD_DIRS)
 
 # Ensure mandatory environment variable is set. E.g. guard-FOO ensures FOO is set.
 guard-%:
-	@if [ -z "$($(*))" ]; then \
-		echo "Environment variable $* not set"; \
-		exit 1; \
+	@if [ -z "$($(*))" ]; then 						\
+		echo "Environment variable $* not set"; 	\
+		exit 1; 									\
 	fi
 
 build-image: $(BUILD_DIRS) guard-OS guard-ARCH
@@ -265,7 +265,6 @@ up: $(DEV_DOCKER_COMPOSE_YML)
 down: $(DEV_DOCKER_COMPOSE_YML)
 	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f $(DEV_DOCKER_COMPOSE_YML) down
 
-
 clean: container-clean bin-clean
 
 container-clean:
@@ -274,4 +273,3 @@ container-clean:
 bin-clean:
 	chmod -R +w $(BUILD_GOPATH) $(BUILD_GOCACHE) $(BUILD_BIN_DIR)
 	rm -rf $(BUILD_GOPATH) $(BUILD_GOCACHE) $(BUILD_BIN_DIR)
-
