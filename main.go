@@ -11,7 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	udpforwarder "source-udp-forwarder/pkg/forwarder"
+	udpforwarder "github.com/startersclan/source-udp-forwarder/pkg/forwarder"
 )
 
 var (
