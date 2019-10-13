@@ -78,7 +78,6 @@ func run() error {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
-	log.SetLevel(log.DebugLevel)
 	log.Printf("Log level: %s", *logLevel)
 	log.Printf("Log format: %s", *logFormat)
 
