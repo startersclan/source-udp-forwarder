@@ -52,7 +52,40 @@ docker run -it startersclan/source-udp-forwarder
 
 Requires [`go`](https://golang.org/doc/install), `make`, `docker`, and `docker-compose` if you want all `make` commands to be working.
 
+#### Mount a ramdisk on `./bin`
+
 ```sh
-git clone https://github.com/startersclan/source-udp-forwarder --branch master
-make build  # CTRL+SHIFT+B if using vscode. If you want to run it after building, use `make up`
+make mount-ramdisk
+```
+
+#### Build
+
+```sh
+make build  # Defaults to linux amd64
+GOOS=linux GOARCH=arm64 make build # For arm64
+# etc...
+```
+
+#### Build and run
+
+```sh
+make up
+```
+
+#### Build docker image
+
+```sh
+make build-image
+```
+
+#### Clean
+
+```sh
+make clean
+```
+
+#### Unmount ramdisk on `./bin`
+
+```sh
+make unmount-ramdisk
 ```
