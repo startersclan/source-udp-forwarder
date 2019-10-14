@@ -4,7 +4,6 @@ FROM $BUILD_IMAGE AS builder
 ARG PWD
 WORKDIR $PWD
 COPY . .
-RUN apk add --no-cache git
 RUN go get -d -v ./...
 
 ARG BUILD_DIR

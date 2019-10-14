@@ -16,17 +16,12 @@
 
 set -o errexit
 set -o nounset
-set -o pipefail
+# set -o pipefail || true
 
 export CGO_ENABLED=0
 export GO111MODULE=on
 if [ -d vendor ]; then
     export GOFLAGS="-mod=vendor"
-fi
-
-# Install git if specified
-if [ -n "$INSTALL_GIT" ]; then
-    apk add --no-cache git
 fi
 
 TARGETS=$(go list ./... | grep -v /vendor/)

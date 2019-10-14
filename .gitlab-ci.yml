@@ -21,7 +21,7 @@ test_job:
     - echo "DOCKER_HOST is $DOCKER_HOST'"
   script:
     - apk add --no-cache git make || sudo apt-get install -y git make
-    - make test INSTALL_GIT=true
+    - make test
   after_script:
     - docker logout "$CI_REGISTRY"
     - docker images

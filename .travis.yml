@@ -22,7 +22,7 @@ jobs:
         - echo "DOCKER_HOST is '${DOCKER_HOST}'"
       script:
         - apk add --no-cache git make || sudo apt-get install -y git make
-        - sudo -s /bin/sh -c 'make test INSTALL_GIT=true' # Force make to run docker under root user
+        - sudo -s /bin/sh -c 'make test' # Force make to run docker under root user
       after_script:
         - date
     - name: Build Image

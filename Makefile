@@ -45,7 +45,7 @@ BASEIMAGE ?= gcr.io/distroless/static
 IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
 TAG := $(VERSION)__$(OS)_$(ARCH)
 
-BUILD_IMAGE ?= golang:1.12-alpine
+BUILD_IMAGE ?= golang:1.12
 SHELL_IMAGE ?= golang:1.12
 
 PWD := $$PWD
@@ -134,7 +134,6 @@ $(OUTBIN): $(BUILD_DIRS)
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 		$(BUILD_IMAGE)                                          \
 		/bin/sh -c "                                            \
-			INSTALL_GIT=$(INSTALL_GIT)							\
 			OUTBIN=$(OUTBIN)									\
 			ARCH=$(ARCH)                                        \
 			OS=$(OS)                                            \
@@ -252,7 +251,6 @@ test: $(BUILD_DIRS)
 		--env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 		$(BUILD_IMAGE)                                          \
 		/bin/sh -c "                                            \
-			INSTALL_GIT=$(INSTALL_GIT)							\
 			ARCH=$(ARCH)                                        \
 			OS=$(OS)                                            \
 			VERSION=$(VERSION)                                  \
