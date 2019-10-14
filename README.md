@@ -78,6 +78,12 @@ make up
 make build-image
 ```
 
+#### Test
+
+```sh
+make test
+```
+
 #### Clean
 
 ```sh
