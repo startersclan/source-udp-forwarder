@@ -12,6 +12,8 @@ The HLStatsXCE:CE daemon infers a gameserver's IP:PORT from the client socket fr
 
 Put simply, this UDP forwarder eliminates this need by leveraging on the an already built-in proxy protocol in the daemon - It simply run as a sidecar to the gameserver, receives logs from the gameserver, prepends each log line with a spoofed IP:PORT as well as a secret PROXY_KEY only known by the daemon, and finally sends that log line to the daemon. The daemon reads the gameserver's IP:PORT from each log line, rather than the usual inferring it from the client socket.
 
+`source-udp-forwarder` uses less than `3MB` of memory.
+
 ## How to use
 
 1. Start the gameserver with `logaddress_add 0.0.0.0:26999` for `srcds` (`srcds` refuses to log to `logaddress_add 127.0.0.1:<PORT>` for some reason) or `logaddress_add 127.0.0.1 26999` for `hlds` servers, to ensure the gameserver send logs to `source-udp-forwarder`.
