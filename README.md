@@ -18,11 +18,11 @@ Put simply, this UDP forwarder eliminates this need by leveraging on the an alre
 
 2. Start `source-udp-forwarder` as a sidecar to the gameserver (both on localhost), setting the follow environment variables:
 
-    - `UDP_FORWARD_ADDR` to the HLStatsX:CE daemon's IP:PORT
+    - `UDP_FORWARD_ADDR` to the HLStatsX:CE daemon's IP:PORT or HOSTNAME:PORT
 
     - `FORWARD_PROXY_KEY` to the proxy key secret defined in HLStatsX:CE settings
 
-    - `FORWARD_GAMESERVER_IP` to the gameserver's IP / hostname as registered in HLStatsX:CE database
+    - `FORWARD_GAMESERVER_IP` to the gameserver's IP as registered in HLStatsX:CE database
 
     - `FORWARD_GAMESERVER_PORT` to the gameserver's PORT as registered in HLStatsX:CE database
 
@@ -40,8 +40,8 @@ docker run -it startersclan/source-udp-forwarder
 
 | Environment variable | Description |
 |---|---|
-| `UDP_LISTEN_ADDR`  | `<IP>:<Port>` to listen on for incoming packets. Default value: `:26999` |
-| `UDP_FORWARD_ADDR`  | `<IP>:<Port>` or `<Hostname>:<Port>` to which incoming packets will be forwarded. Default value: `1.2.3.4:1013` |
+| `UDP_LISTEN_ADDR`  | `<IP>:<PORT>` to listen on for incoming packets. Default value: `:26999` |
+| `UDP_FORWARD_ADDR`  | `<IP>:<PORT>` or `<HOSTNAME>:<PORT>` to which incoming packets will be forwarded. Default value: `1.2.3.4:1013` |
 | `FORWARD_PROXY_KEY`  | The PROXY_KEY secret defined in HLStatsX:CE settings. Default value: `XXXXX` |
 | `FORWARD_GAMESERVER_IP`  | IP that the sent packet should include. Default value: `127.0.0.1` |
 | `FORWARD_GAMESERVER_PORT`  | Port that the sent packet should include. Default value: `27015` |
