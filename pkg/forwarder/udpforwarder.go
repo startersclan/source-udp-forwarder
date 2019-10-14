@@ -72,7 +72,7 @@ func Forward(src, dst string, timeout time.Duration, prependStr string) (*Forwar
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("udp-forwarder: Listening on %s", forwarder.src)
+	log.Infof("Listening on %s", forwarder.src)
 
 	go forwarder.janitor()
 	go forwarder.run()
@@ -140,7 +140,7 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 			log.Println("udp-forwarder: failed to dial:", err)
 			return
 		}
-		log.Infof("udp-forwarder: Listening again on %s", addr.String())
+		log.Debugf("Listening on %s", conn.LocalAddr().String())
 
 		f.connectionsMutex.Lock()
 		f.connections[addr.String()] = connection{
@@ -151,13 +151,14 @@ func (f *Forwarder) handle(data []byte, addr *net.UDPAddr) {
 
 		f.connectCallback(addr.String())
 
-		log.Debugf("Forwarding data to: %s", f.dst.String())
+		log.Debugf("Forwarding data from %s to %s", conn.LocalAddr().String(), f.dst.String())
 		conn.WriteTo(data, f.dst)
 
 		for {
 			buf := make([]byte, bufferSize)
 			n, _, err := conn.ReadFromUDP(buf)
 			if err != nil {
+				log.Debugf("Closing %s", conn.LocalAddr().String())
 				f.connectionsMutex.Lock()
 				conn.Close()
 				delete(f.connections, addr.String())
