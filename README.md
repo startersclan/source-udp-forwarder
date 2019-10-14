@@ -47,3 +47,12 @@ docker run -it startersclan/source-udp-forwarder
 | `FORWARD_GAMESERVER_PORT`  | Port that the sent packet should include. Default value: `27015` |
 | `LOG_LEVEL` | Log level. Defaults to `INFO`. May be one of the following (starting with the most verbose): `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`. Default value: `INFO`|
 | `LOG_FORMAT` | Log format, valid options are `txt` and `json`. Default value: `txt` |
+
+## Development
+
+Requires [`go`](https://golang.org/doc/install), `make`, `docker`, and `docker-compose` if you want all `make` commands to be working.
+
+```sh
+git clone https://github.com/startersclan/source-udp-forwarder --branch master
+make build  # CTRL+SHIFT+B if using vscode. If you want to run it after building, use `make up`
+```
