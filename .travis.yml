@@ -6,6 +6,13 @@ stages:
   - test
   - build
 
+branches:
+  only:
+    - master
+    - docker
+    - docker-dev
+    - /^v(?:\d+\.)+\d+$/
+
 jobs:
   include:
     - name: Unit Tests
@@ -28,12 +35,6 @@ jobs:
         - date
     - name: Build
       stage: build
-      branches:
-        only:
-          - master
-          - docker
-          - docker-dev
-          - /^v(?:\d+\.)+\d+$/
       before_script:
         - date
         - whoami
