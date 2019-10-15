@@ -73,7 +73,9 @@ GOOS=linux GOARCH=arm64 make build # For arm64
 #### Build and run
 
 ```sh
-make up
+make up     # Defaults to linux amd64
+GOOS=linux GOARCH=arm64 make build # For arm64
+# etc...
 ```
 
 #### Build docker image
@@ -81,6 +83,7 @@ make up
 ```sh
 make build-image  # Defaults to linux amd64
 GOOS=linux GOARCH=arm64 make build-image # For arm64
+# etc...
 ```
 
 #### Test
