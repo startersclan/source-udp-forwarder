@@ -17,17 +17,21 @@
 set -o errexit
 set -o nounset
 # set -o pipefail || true
+set -eu
 
-export CGO_ENABLED=0
-export GO111MODULE=on
-if [ -d vendor ]; then
-    export GOFLAGS="-mod=vendor"
-fi
+export CGO_ENABLED=1
+export GO111MODULE="$GO111MODULE"
+export GOFLAGS="$GOFLAGS"
 
-TARGETS=$(go list ./... | grep -v /vendor/)
+TARGETS=$(for d in "$@"; do echo ./$d/...; done)
 
 echo "Running tests:"
-go test -installsuffix "static" ${TARGETS}
+# go test -installsuffix "static" ${TARGETS}
+if [ -n "$COVERAGE" ]; then
+    go test -v -race -coverprofile=coverage.txt -covermode=atomic ${TARGETS}
+else
+    go test -v -race ${TARGETS}
+fi
 echo
 
 echo -n "Checking gofmt: "

@@ -14,29 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if [ -z "${OUTBIN:-}" ]; then
-    echo "OUTBIN must be set"
-    exit 1
-fi
-if [ -z "${OS:-}" ]; then
-    echo "OS must be set"
-    exit 1
-fi
-if [ -z "${ARCH:-}" ]; then
-    echo "ARCH must be set"
-    exit 1
-fi
-if [ -z "${VERSION:-}" ]; then
-    echo "VERSION must be set"
-    exit 1
-fi
+set -eu
 
 export CGO_ENABLED=0
 export GOARCH="${ARCH}"
 export GOOS="${OS}"
-export GO111MODULE=on
-if [ -d vendor ]; then
-    export GOFLAGS="-mod=vendor"
-fi
+export GO111MODULE="${GO111MODULE}"
+export GOFLAGS="$GOFLAGS"
 
 go build -o "$OUTBIN" -ldflags "-s -w -extldflags \"-static\" -X $(go list -m)/cmd.VERSION=$VERSION -X $(go list -m)/cmd.COMMIT_SHA1=$COMMIT_SHA1 -X $(go list -m)/cmd.BUILD_DATE=$BUILD_DATE"
