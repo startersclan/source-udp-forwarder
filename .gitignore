@@ -8,4 +8,4 @@
 !/.dockerignore
 !/.gitlab-ci.yml
 !/.travis.yml
-/bin
+coverage.txt
