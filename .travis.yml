@@ -63,7 +63,6 @@ deploy:
     - ./.go/bin/*
   skip_cleanup: true
   on:
-    branches:
-      - docker
+    branch: docker
     # tags: true
   draft: true
