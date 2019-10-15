@@ -271,6 +271,9 @@ test: $(BUILD_DIRS)
 coverage:
 	@$(MAKE) test
 
+checksums:
+	@cd "$(BUILD_BIN_DIR)" && shasum -a 256 * > checksums.txt
+
 $(BUILD_DIRS):
 	@mkdir -p $@
 
