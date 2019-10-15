@@ -77,7 +77,8 @@ make up
 #### Build docker image
 
 ```sh
-make build-image
+make build-image  # Defaults to linux amd64
+GOOS=linux GOARCH=arm64 make build-image # For arm64
 ```
 
 #### Test
