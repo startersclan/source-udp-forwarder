@@ -16,7 +16,7 @@ services:
       - FORWARD_GAMESERVER_IP=127.0.0.1
       - FORWARD_GAMESERVER_PORT=27015
       - LOG_LEVEL=DEBUG
-    entrypoint: //source-udp-forwarder
+    entrypoint: /${BIN?:err}
     volumes:
-      - ./bin/linux_amd64/source-udp-forwarder:/source-udp-forwarder
+      - ${OUTBIN?:err}:/${BIN?:err}
     network_mode: host
