@@ -27,8 +27,8 @@ TARGETS=$(for d in "$@"; do echo ./$d/...; done)
 
 echo "Running tests:"
 # go test -installsuffix "static" ${TARGETS}
-if [ -n "$COVERAGE" ]; then
-    go test -v -race -coverprofile=coverage.txt -covermode=atomic ${TARGETS}
+if [ -n "$COVERAGE_FILE" ]; then
+    go test -v -race -coverprofile=$COVERAGE_FILE -covermode=atomic ${TARGETS}
 else
     go test -v -race ${TARGETS}
 fi

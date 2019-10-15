@@ -69,6 +69,8 @@ BUILD_DIRS := $(BUILD_GOPATH) \
 
 OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
 
+COVERAGE_FILE ?= $(BUILD_GOPATH)/coverage.txt
+
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
 # If you want to build AND push all containers, see the 'all-push' rule.
@@ -262,12 +264,12 @@ test: $(BUILD_DIRS)
 			VERSION=$(VERSION) \
 			GO111MODULE=$(GO111MODULE) \
 			GOFLAGS=$(GOFLAGS) \
-			COVERAGE=$(COVERAGE) \
+			COVERAGE_FILE=$(COVERAGE_FILE) \
 			./build/test.sh $(SRC_DIRS) \
 		"
 
 coverage:
-	@$(MAKE) test COVERAGE=1
+	@$(MAKE) test
 
 $(BUILD_DIRS):
 	@mkdir -p $@
