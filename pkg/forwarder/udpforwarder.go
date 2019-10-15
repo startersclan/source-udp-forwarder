@@ -102,7 +102,13 @@ func (f *Forwarder) run() {
 }
 
 func (f *Forwarder) janitor() {
-	for !f.closed {
+	for {
+		f.connectionsMutex.Lock()
+		if f.closed {
+			return
+		}
+		f.connectionsMutex.Unlock()
+
 		time.Sleep(f.timeout)
 		var keysToDelete []string
 
