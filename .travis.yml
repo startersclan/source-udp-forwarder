@@ -49,20 +49,24 @@ jobs:
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       script:
         - sudo apt-get install -y git make
-        - REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER" make build-image push-image
+        - make build GOOS=linux GOARCH=amd64
+        - make build GOOS=darwin GOARCH=amd64
+        - make build GOOS=windows GOARCH=amd64
+        - make build-image push-image GOOS=linux GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
+        - make build-image push-image GOOS=darwin GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
+        - make build-image push-image GOOS=windows GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
       after_script:
         - docker logout "$CI_REGISTRY"
         - docker images
         - date
-
-deploy:
-  provider: releases
-  api_key: $GITHUB_OAUTH_TOKEN
-  file_glob: true
-  file:
-    - ./.go/bin/*
-  skip_cleanup: true
-  on:
-    branch: docker
-    # tags: true
-  draft: true
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        file_glob: true
+        file:
+          - ./.go/bin/*
+        skip_cleanup: true
+        on:
+          branch: docker
+          # tags: true
+        draft: true
