@@ -66,9 +66,8 @@ BUILD_DIR := $(PWD)/build
 BUILD_DIRS := $(BUILD_GOPATH) \
 			  $(BUILD_GOCACHE) \
 			  $(BUILD_BIN_DIR) \
-			  #.go/bin/$(OS)_$(ARCH)
 
-OUTBIN = $(BUILD_BIN_DIR)/$(OS)_$(ARCH)/$(BIN)
+OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
