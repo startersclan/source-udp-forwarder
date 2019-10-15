@@ -62,5 +62,6 @@ deploy:
   file:
     - ./.go/bin/*
   skip_cleanup: true
-  on:
-    tags: true
+  # on:
+  #   tags: true
+  draft: true
