@@ -20,17 +20,12 @@
         {
             "label": "makefile-down",
             "type": "shell",
-            "command": "make up",
+            "command": "make down",
         },
         {
             "label": "makefile-clean",
             "type": "shell",
             "command": "make clean",
-        },
-        {
-            "label": "makefile-shell",
-            "type": "shell",
-            "command": "make shell",
         },
         {
             "label": "makefile-mount-ramdisk",
@@ -41,6 +36,11 @@
             "label": "makefile-unmount-ramdisk",
             "type": "shell",
             "command": "make unmount-ramdisk"
+        },
+        {
+            "label": "makefile-shell",
+            "type": "shell",
+            "command": "make shell",
         },
     ]
 }
