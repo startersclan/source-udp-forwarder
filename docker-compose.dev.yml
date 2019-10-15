@@ -1,7 +1,7 @@
 version: '3.4'
 
 services:
-  source_builder_exporter:
+  source-udp-forwarder:
     image: alpine:3.8
     user: ${UID}:${GID}
     ports:
