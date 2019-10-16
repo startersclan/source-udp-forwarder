@@ -3,6 +3,7 @@
 [![travis-ci](https://img.shields.io/travis/startersclan/source-udp-forwarder/master)](https://travis-ci.org/startersclan/source-udp-forwarder)
 [![docker-image-size](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 [![docker-image-layers](https://img.shields.io/microbadger/layers/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
+[![codecov](https://codecov.io/gh/startersclan/source-udp-forwarder/branch/master/graph/badge.svg)](https://codecov.io/gh/startersclan/source-udp-forwarder)
 
 A simple UDP forwarder to the HLStatsX:CE daemon.
 
