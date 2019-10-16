@@ -67,6 +67,6 @@ jobs:
           - ./.go/bin/*
         skip_cleanup: true
         on:
-          branch: docker
-          # tags: true
-        draft: true
+          tags: true
+          # branch: docker
+        # draft: true
