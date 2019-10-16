@@ -77,15 +77,15 @@ GOOS=linux GOARCH=arm64 make build # For arm64
 
 ```sh
 make up     # Defaults to linux amd64
-GOOS=linux GOARCH=arm64 make build # For arm64
+make up GOOS=linux GOARCH=arm64 # For arm64
 # etc...
 ```
 
 #### Build docker image
 
 ```sh
-make build-image  # Defaults to linux amd64
-GOOS=linux GOARCH=arm64 make build-image # For arm64
+make build-image    # Defaults to linux amd64
+make build-image GOOS=linux GOARCH=arm64 # For arm64
 # etc...
 ```
 
