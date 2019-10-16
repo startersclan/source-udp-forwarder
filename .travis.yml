@@ -6,10 +6,16 @@ stages:
   - test
   - build
 
+env:
+  - GOOS=linux GOARCH=amd64
+  - GOOS=darwin GOARCH=amd64
+  - GOOS=windows GOARCH=amd64
+
 jobs:
   include:
     - name: Unit Tests
       stage: test
+      env:
       before_script:
         - date
         - whoami
@@ -49,12 +55,8 @@ jobs:
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       script:
         - sudo apt-get install -y git make
-        - make build GOOS=linux GOARCH=amd64
-        - make build GOOS=darwin GOARCH=amd64
-        - make build GOOS=windows GOARCH=amd64
-        - make build-image push-image GOOS=linux GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
-        - make build-image push-image GOOS=darwin GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
-        - make build-image push-image GOOS=windows GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
+        - make build "GOOS=linux" "GOARCH=$GOARCH"
+        - make build-image push-image "GOOS=$GOOS" "GOARCH=$GOARCH" "REGISTRY=$CI_REGISTRY" "REGISTRY_USER=$CI_REGISTRY_USER"
       after_script:
         - docker logout "$CI_REGISTRY"
         - docker images
