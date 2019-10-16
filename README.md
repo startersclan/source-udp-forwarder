@@ -4,6 +4,7 @@
 [![docker-image-size](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 [![docker-image-layers](https://img.shields.io/microbadger/layers/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 [![codecov](https://codecov.io/gh/startersclan/source-udp-forwarder/branch/master/graph/badge.svg)](https://codecov.io/gh/startersclan/source-udp-forwarder)
+[![Go Report Card](https://goreportcard.com/badge/github.com/startersclan/source-udp-forwarder)](https://goreportcard.com/report/github.com/startersclan/source-udp-forwarder)
 
 A simple UDP forwarder to the HLStatsX:CE daemon.
 
@@ -17,7 +18,7 @@ This UDP forwarder eliminates this need by leveraging on the an already built-in
 
 ## How to use
 
-1. Start the gameserver with `logaddress_add 0.0.0.0:26999` for `srcds` (`srcds` refuses to log to `logaddress_add 127.0.0.1:<PORT>` for some reason) or `logaddress_add 127.0.0.1 26999` for `hlds` servers, to ensure the gameserver send logs to `source-udp-forwarder`.
+1. Start the gameserver with cvar `logaddress_add 0.0.0.0:26999` for `srcds` (`srcds` refuses to log to `logaddress_add 127.0.0.1:<PORT>` for some reason) or `logaddress_add 127.0.0.1 26999` for `hlds` servers, to ensure the gameserver send logs to `source-udp-forwarder`.
 
 2. Start `source-udp-forwarder` as a sidecar to the gameserver (both on localhost), setting the follow environment variables:
 

@@ -26,7 +26,7 @@ jobs:
         - bash <(curl -s https://codecov.io/bash)
       after_script:
         - date
-    - name: Build Image
+    - name: Build
       stage: build
       branches:
         only:
@@ -48,7 +48,7 @@ jobs:
         - echo "[Stage $TRAVIS_BUILD_STAGE_NAME, Job $TRAVIS_JOB_NAME]"
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       script:
-        - sudo apt-get install -y git make
+        - apk add --no-cache git make || sudo apt-get install -y git make
         - make build GOOS=linux GOARCH=amd64
         - make build GOOS=darwin GOARCH=amd64
         - make build GOOS=windows GOARCH=amd64
