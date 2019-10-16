@@ -6,11 +6,6 @@ stages:
   - test
   - build
 
-env:
-  - GOOS=linux GOARCH=amd64
-  - GOOS=darwin GOARCH=amd64
-  - GOOS=windows GOARCH=amd64
-
 jobs:
   include:
     - name: Unit Tests
@@ -34,6 +29,11 @@ jobs:
         - date
     - name: Build Image
       stage: build
+      env:
+        matrix:
+          - GOOS=linux GOARCH=amd64
+          - GOOS=darwin GOARCH=amd64
+          - GOOS=windows GOARCH=amd64
       branches:
         only:
           - master
