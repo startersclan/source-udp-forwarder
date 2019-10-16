@@ -6,13 +6,6 @@ stages:
   - test
   - build
 
-branches:
-  only:
-    - master
-    - docker
-    - docker-dev
-    - /^v(?:\d+\.)+\d+$/
-
 env:
   matrix:
     - GOOS=linux GOARCH=amd64
@@ -23,6 +16,7 @@ jobs:
   include:
     - name: Unit Tests
       stage: test
+      env:
       before_script:
         - date
         - whoami
@@ -39,36 +33,43 @@ jobs:
         - bash <(curl -s https://codecov.io/bash)
       after_script:
         - date
+    - name: Build Image
+      stage: build
+      branches:
+        only:
+          - master
+          - docker
+          - docker-dev
+          - /^v(?:\d+\.)+\d+$/
+      before_script:
+        - date
+        - whoami
+        - cat /etc/*release
+        - df -h
+        - free
+        #- env
+        - docker version
+        - docker images
+        - echo "DOCKER_HOST is ${DOCKER_HOST}"
 
-before_script:
-  - date
-  - whoami
-  - cat /etc/*release
-  - df -h
-  - free
-  #- env
-  - docker version
-  - docker images
-  - echo "DOCKER_HOST is ${DOCKER_HOST}"
-
-  - echo "[Stage $TRAVIS_BUILD_STAGE_NAME, Job $TRAVIS_JOB_NAME]"
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-script:
-  - sudo apt-get install -y git make
-  - make build "GOOS=linux" "GOARCH=$GOARCH"
-  - make build-image push-image "GOOS=$GOOS" "GOARCH=$GOARCH" "REGISTRY=$CI_REGISTRY" "REGISTRY_USER=$CI_REGISTRY_USER"
-after_script:
-  - docker logout "$CI_REGISTRY"
-  - docker images
-  - date
-deploy:
-  provider: releases
-  api_key: $GITHUB_OAUTH_TOKEN
-  file_glob: true
-  file:
-    - ./.go/bin/*
-  skip_cleanup: true
-  on:
-    branch: docker
-    # tags: true
-  draft: true
+        - echo "[Stage $TRAVIS_BUILD_STAGE_NAME, Job $TRAVIS_JOB_NAME]"
+        - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+      script:
+        - sudo apt-get install -y git make
+        - make build "GOOS=linux" "GOARCH=$GOARCH"
+        - make build-image push-image "GOOS=$GOOS" "GOARCH=$GOARCH" "REGISTRY=$CI_REGISTRY" "REGISTRY_USER=$CI_REGISTRY_USER"
+      after_script:
+        - docker logout "$CI_REGISTRY"
+        - docker images
+        - date
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        file_glob: true
+        file:
+          - ./.go/bin/*
+        skip_cleanup: true
+        on:
+          branch: docker
+          # tags: true
+        draft: true
