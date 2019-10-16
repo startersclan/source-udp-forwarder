@@ -101,7 +101,7 @@ make test
 make clean
 ```
 
-#### Unmount ramdisk on `./bin`
+#### Unmount ramdisk on `./.go/bin`
 
 ```sh
 make unmount-ramdisk
