@@ -3,8 +3,8 @@ dist: xenial
 services: docker
 
 stages:
-  - build
   - test
+  - build
 
 jobs:
   include:
@@ -23,10 +23,11 @@ jobs:
       script:
         - apk add --no-cache git make || sudo apt-get install -y git make
         - sudo -s /bin/sh -c 'make test' # Force make to run docker under root user
+        - bash <(curl -s https://codecov.io/bash)
       after_script:
         - date
     - name: Build Image
-      stage: build_image
+      stage: build
       branches:
         only:
           - master
@@ -48,8 +49,24 @@ jobs:
         - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       script:
         - sudo apt-get install -y git make
-        - REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER" make build-image push-image
+        - make build GOOS=linux GOARCH=amd64
+        - make build GOOS=darwin GOARCH=amd64
+        - make build GOOS=windows GOARCH=amd64
+        - make build-image push-image GOOS=linux GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
+        - make build-image push-image GOOS=darwin GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
+        - make build-image push-image GOOS=windows GOARCH=amd64 REGISTRY="$CI_REGISTRY" REGISTRY_USER="$CI_REGISTRY_USER"
       after_script:
         - docker logout "$CI_REGISTRY"
         - docker images
         - date
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        file_glob: true
+        file:
+          - ./.go/bin/*
+        skip_cleanup: true
+        on:
+          tags: true
+          # branch: docker
+        # draft: true

@@ -66,9 +66,10 @@ BUILD_DIR := $(PWD)/build
 BUILD_DIRS := $(BUILD_GOPATH) \
 			  $(BUILD_GOCACHE) \
 			  $(BUILD_BIN_DIR) \
-			  #.go/bin/$(OS)_$(ARCH)
 
-OUTBIN = $(BUILD_BIN_DIR)/$(OS)_$(ARCH)/$(BIN)
+OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
+
+COVERAGE_FILE ?= $(BUILD_GOPATH)/coverage.txt
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
@@ -263,12 +264,15 @@ test: $(BUILD_DIRS)
 			VERSION=$(VERSION) \
 			GO111MODULE=$(GO111MODULE) \
 			GOFLAGS=$(GOFLAGS) \
-			COVERAGE=$(COVERAGE) \
+			COVERAGE_FILE=$(COVERAGE_FILE) \
 			./build/test.sh $(SRC_DIRS) \
 		"
 
 coverage:
-	@$(MAKE) test COVERAGE=1
+	@$(MAKE) test
+
+checksums:
+	@cd "$(BUILD_BIN_DIR)" && shasum -a 256 * > checksums.txt
 
 $(BUILD_DIRS):
 	@mkdir -p $@
