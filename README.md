@@ -1,10 +1,11 @@
 # source-udp-forwarder
 
 [![travis-ci](https://img.shields.io/travis/startersclan/source-udp-forwarder/master)](https://travis-ci.org/startersclan/source-udp-forwarder)
+[![github-tag](https://img.shields.io/github/tag/startersclan/source-udp-forwarder.svg)](https://github.com/startersclan/source-udp-forwarder/releases/)
 [![docker-image-size](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 [![docker-image-layers](https://img.shields.io/microbadger/layers/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 [![codecov](https://codecov.io/gh/startersclan/source-udp-forwarder/branch/master/graph/badge.svg)](https://codecov.io/gh/startersclan/source-udp-forwarder)
-[![Go Report Card](https://goreportcard.com/badge/github.com/startersclan/source-udp-forwarder)](https://goreportcard.com/report/github.com/startersclan/source-udp-forwarder)
+[![go-report-card](https://goreportcard.com/badge/github.com/startersclan/source-udp-forwarder)](https://goreportcard.com/report/github.com/startersclan/source-udp-forwarder)
 
 A simple UDP forwarder to the HLStatsX:CE daemon.
 
