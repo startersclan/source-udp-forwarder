@@ -38,7 +38,7 @@ This UDP forwarder eliminates this need by leveraging on an already built-in pro
 ## Docker image
 
 ```sh
-docker run -it startersclan/source-udp-forwarder
+docker run -it startersclan/source-udp-forwarder:v0.0.5-linux-amd64 # linux
 ```
 
 ## Environment variables
