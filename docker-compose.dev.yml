@@ -4,11 +4,13 @@ services:
   source-udp-forwarder:
     image: alpine:3.8
     user: ${UID}:${GID}
-    ports:
-      - target: 26999
-        published: 26999
-        protocol: udp
-        mode: host
+    # No need to publish ports, since we're using host networking. If you prefer container networking, comment out network_mode, and uncomment this.
+    # ports:
+    #   - target: 26999
+    #     published: 26999
+    #     protocol: udp
+    #     mode: host
+    network_mode: host
     environment:
       - UDP_LISTEN_ADDR=:26999
       - UDP_FORWARD_ADDR=0.0.0.0:27500
@@ -19,4 +21,3 @@ services:
     entrypoint: /${BIN?:err}
     volumes:
       - ${OUTBIN?:err}:/${BIN?:err}
-    network_mode: host
