@@ -70,7 +70,7 @@ make mount-ramdisk
 
 ```sh
 make build  # Defaults to linux amd64
-GOOS=linux GOARCH=arm64 make build # For arm64
+make build GOOS=linux GOARCH=arm64 # For arm64
 # etc...
 ```
 
