@@ -12,7 +12,7 @@
             "program": "${fileDirname}",
             "env":{
                 "GOPATH": "${workspaceFolder}/.go",
-                "GOCACHE": "${workspaceFolder}/.cache/go-build",
+                "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
             },
             "args": [
                 "--udp.listen-address=127.0.0.1:26999",
@@ -22,7 +22,7 @@
                 "--forward.gameserver-port=23456",
                 "--log.level=DEBUG"
             ],
-            "output": "${workspaceFolder}/bin/debug",
+            "output": "${workspaceFolder}/.go/bin/debug",
             "showLog": true,
             "trace": "error",
             "dlvLoadConfig": {
@@ -42,9 +42,9 @@
             "program": "${workspaceFolder}/pkg/forwarder",
             "env":{
                 "GOPATH": "${workspaceFolder}/.go",
-                "GOCACHE": "${workspaceFolder}/.cache/go-build",
+                "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
             },
-            "output": "${workspaceFolder}/bin/debug.test",
+            "output": "${workspaceFolder}/.go/bin/debug.test",
             "showLog": true,
             "trace": "error",
         },
@@ -56,13 +56,13 @@
             "program": "${workspaceFolder}/pkg/forwarder",
             "env":{
                 "GOPATH": "${workspaceFolder}/.go",
-                "GOCACHE": "${workspaceFolder}/.cache/go-build",
+                "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
             },
             "args": [
                 "-test.run",
-                "TestLoadSourceBuilderArgs"
+                "TestForward"
             ],
-            "output": "${workspaceFolder}/bin/debug.test",
+            "output": "${workspaceFolder}/.go/bin/debug.test",
             "showLog": true,
             "trace": "error",
         },
