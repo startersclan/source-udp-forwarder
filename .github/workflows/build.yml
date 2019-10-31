@@ -1,0 +1,99 @@
+name: build
+
+on:
+  push:
+    branches:
+    - '**'
+    tags:
+    - '**'
+  pull_request:
+    branches:
+    - '**'
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Display system info (linux)
+      run: |
+        set -e
+        hostname
+        whoami
+        cat /etc/*release
+        lscpu
+        free
+        df -h
+        pwd
+        docker info
+        docker version
+    - name: Code Coverage
+      run: |
+        set -e
+        apk add --no-cache git make || sudo apt-get install -y git make
+        sudo -s /bin/sh -c 'make test' # Force make to run docker under root user
+        bash <(curl -s https://codecov.io/bash)
+  build-docker-image:
+    runs-on: ubuntu-18.04
+    env:
+      # TAG_WITH_VERSION: ${GITHUB_REF}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Display system info (linux)
+      run: |
+        set -e
+        hostname
+        whoami
+        cat /etc/*release
+        lscpu
+        free
+        df -h
+        pwd
+        docker info
+        docker version
+    - name: Login to docker registry
+      run: echo "${DOCKERHUB_REGISTRY_PASSWORD}" | docker login -u "${DOCKERHUB_REGISTRY_USER}" --password-stdin
+      env:
+        DOCKERHUB_REGISTRY_USER: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
+        DOCKERHUB_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_REGISTRY_PASSWORD }}
+    - name: Build and push image
+      env:
+        DOCKERHUB_REGISTRY_USER: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
+      run: |
+        set -e
+        make build-image push-image GOOS=linux GOARCH=amd64 REGISTRY_USER="$DOCKERHUB_REGISTRY_USER"
+        make build-image push-image GOOS=darwin GOARCH=amd64 REGISTRY_USER="$DOCKERHUB_REGISTRY_USER"
+        make build-image push-image GOOS=windows GOARCH=amd64 REGISTRY_USER="$DOCKERHUB_REGISTRY_USER"
+    - name: Clean-up
+      run: docker logout
+      if: always()
+  update-draft-release:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: toolmantim/release-drafter@v5.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    name:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Build
+      run: |
+        set -e
+        make build GOOS=linux GOARCH=amd64
+        make build GOOS=darwin GOARCH=amd64
+        make build GOOS=windows GOARCH=amd64
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: |
+          ./.go/bin/*
