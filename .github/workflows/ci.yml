@@ -36,6 +36,7 @@ jobs:
         sudo -s /bin/sh -c 'make test' # Force make to run docker under root user
         bash <(curl -s https://codecov.io/bash)
   build-docker-image:
+    needs: [test]
     strategy:
       matrix:
         os: [linux, darwin, windows]
@@ -74,6 +75,7 @@ jobs:
       run: docker logout
       if: always()
   update-draft-release:
+    needs: [test, build-docker-image]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
@@ -82,6 +84,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release:
+    needs: [test, build-docker-image, update-draft-release]
     if: startsWith(github.ref, 'refs/tags/')
     strategy:
       matrix:
