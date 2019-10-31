@@ -37,7 +37,7 @@ jobs:
         bash <(curl -s https://codecov.io/bash)
   build-docker-image:
     runs-on: ubuntu-18.04
-    env:
+    # env:
       # TAG_WITH_VERSION: ${GITHUB_REF}
     steps:
     - uses: actions/checkout@v1
