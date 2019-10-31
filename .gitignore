@@ -1,4 +1,7 @@
 /.*
+
+!/.github
+
 !/.vscode
 /.vscode/*
 !/.vscode/launch.json

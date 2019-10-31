@@ -1,6 +1,10 @@
 # source-udp-forwarder
 
+<!--
 [![travis-ci](https://img.shields.io/travis/startersclan/source-udp-forwarder/master)](https://travis-ci.org/startersclan/source-udp-forwarder)
+-->
+
+[![github-actions](https://github.com/startersclan/source-udp-forwarder/workflows/ci/badge.svg)](https://github.com/startersclan/source-udp-forwarder/actions)
 [![github-tag](https://img.shields.io/github/tag/startersclan/source-udp-forwarder)](https://github.com/startersclan/source-udp-forwarder/releases/)
 [![docker-image-size](https://img.shields.io/microbadger/image-size/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
 [![docker-image-layers](https://img.shields.io/microbadger/layers/startersclan/source-udp-forwarder/latest)](https://hub.docker.com/r/startersclan/source-udp-forwarder)
