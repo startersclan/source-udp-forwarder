@@ -40,7 +40,7 @@ jobs:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64]
-    name: build-docker-image-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
+    name: build-docker-image-${{ matrix.os }}-${{ matrix.arch }}
     runs-on: ubuntu-18.04
     env:
       GOOS: ${{ matrix.os }}
@@ -87,7 +87,7 @@ jobs:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64]
-    name: release-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
+    name: release-${{ matrix.os }}-${{ matrix.arch }}
     runs-on: ubuntu-18.04
     env:
       GOOS: ${{ matrix.os }}
