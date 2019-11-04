@@ -11,4 +11,3 @@
 !/.dockerignore
 !/.gitlab-ci.yml
 !/.travis.yml
-coverage.txt
