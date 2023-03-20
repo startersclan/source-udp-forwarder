@@ -34,7 +34,7 @@ REGISTRY_USER ?= startersclan
 
 # This version-strategy uses git tags to set the version string
 # Get the following from left to right: tag > branch > branch of detached HEAD commit
-VERSION = $(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD 2>/dev/null || git name-rev --name-only "$$( git rev-parse --short HEAD )" | sed 's@remotes/origin/@@' | sed 's@~.*@@' )
+VERSION = $(shell git describe --tags --dirty 2>/dev/null)
 # Get the short SHA
 SHA_SHORT = $(shell git rev-parse --short HEAD)
 
@@ -278,7 +278,7 @@ $(BUILD_DIRS):
 	@mkdir -p $@
 
 # Development docker-compose up. Run build first
-DEV_DOCKER_COMPOSE_YML := docker-compose.dev.yml
+DEV_DOCKER_COMPOSE_YML := docker-compose.yml
 up: $(DEV_DOCKER_COMPOSE_YML)
 	@$(MAKE) build
 	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f $(DEV_DOCKER_COMPOSE_YML) up
