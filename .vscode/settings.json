@@ -1,0 +1,4 @@
+{
+    "go.toolsManagement.checkForUpdates": "off",
+    "go.useLanguageServer": true,
+}
