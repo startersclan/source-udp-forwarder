@@ -4,43 +4,52 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "makefile-build",
+            "label": "make build",
             "type": "shell",
             "command": "make build",
-            "group": {
-                "kind": "build",
-                "isDefault": true,
-            },
+            "group": "build"
         },
         {
-            "label": "makefile-up",
+            "label": "make test",
+            "type": "shell",
+            "command": "make test",
+            "group": "build"
+        },
+        {
+            "label": "make up",
             "type": "shell",
             "command": "make up",
+            "group": "build"
         },
         {
-            "label": "makefile-down",
+            "label": "make down",
             "type": "shell",
             "command": "make down",
+            "group": "build"
         },
         {
-            "label": "makefile-clean",
+            "label": "make clean",
             "type": "shell",
             "command": "make clean",
+            "group": "build"
         },
         {
-            "label": "makefile-mount-ramdisk",
+            "label": "make mount-ramdisk",
             "type": "shell",
-            "command": "make mount-ramdisk"
+            "command": "make mount-ramdisk",
+            "group": "build"
         },
         {
-            "label": "makefile-unmount-ramdisk",
+            "label": "make unmount-ramdisk",
             "type": "shell",
-            "command": "make unmount-ramdisk"
+            "command": "make unmount-ramdisk",
+            "group": "build"
         },
         {
-            "label": "makefile-shell",
+            "label": "make shell",
             "type": "shell",
             "command": "make shell",
+            "group": "build"
         },
     ]
 }
