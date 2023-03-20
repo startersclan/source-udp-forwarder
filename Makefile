@@ -51,8 +51,8 @@ ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
 TAG_SUFFIX := $(OS)-$(ARCH)
 
-BUILD_IMAGE ?= golang:1.12
-SHELL_IMAGE ?= golang:1.12
+BUILD_IMAGE ?= golang:1.20
+SHELL_IMAGE ?= golang:1.20
 
 PWD := $$PWD
 
