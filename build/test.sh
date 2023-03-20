@@ -14,19 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-# set -o pipefail || true
 set -eu
 
 export CGO_ENABLED=1
-export GO111MODULE="$GO111MODULE"
-export GOFLAGS="$GOFLAGS"
+export GO111MODULE=${GO111MODULE:-on}
+export GOFLAGS="${GOFLAGS:-}"
 
 TARGETS=$(for d in "$@"; do echo ./$d/...; done)
 
 echo "Running tests:"
 # go test -installsuffix "static" ${TARGETS}
+COVERAGE_FILE=${COVERAGE_FILE:-}
 if [ -n "$COVERAGE_FILE" ]; then
     go test -v -race -coverprofile=$COVERAGE_FILE -covermode=atomic ${TARGETS}
 else
