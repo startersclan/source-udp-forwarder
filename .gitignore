@@ -1,2 +1,4 @@
 /.go
+Dockerfile
 coverage.txt
+metadata.json

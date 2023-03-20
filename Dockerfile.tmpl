@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+
+# Build stage
+ARG BUILD_IMAGE
+FROM $BUILD_IMAGE AS builder
+ARG BUILD_DIR
+ARG OS
+ARG ARCH
+ARG GO111MODULE
+ARG GOFLAGS
+ARG OUTBIN
+ARG VERSION
+ARG COMMIT_SHA1
+ARG BUILD_DATE
+ARG PWD
+WORKDIR $PWD
+COPY . .
+RUN set -eux; \
+    $BUILD_DIR/build.sh; \
+    ls -al $OUTBIN; \
+    $OUTBIN -version
+
+# Final stage
+FROM alpine:3.8 AS final
+ARG OUTBIN
+COPY --from=builder $OUTBIN /$BIN
+RUN apk --no-cache add ca-certificates
+EXPOSE 26999
+ENTRYPOINT [ "/$BIN" ]

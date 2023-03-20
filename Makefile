@@ -52,7 +52,6 @@ IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
 TAG_SUFFIX := $(OS)-$(ARCH)
 
 BUILD_IMAGE ?= golang:1.20
-SHELL_IMAGE ?= golang:1.20
 
 PWD := $$PWD
 
@@ -72,8 +71,6 @@ OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
 COVERAGE_FILE ?= $(BUILD_GOPATH)/coverage.txt
 
 # If you want to build all binaries, see the 'all-build' rule.
-# If you want to build all containers, see the 'all-container' rule.
-# If you want to build AND push all containers, see the 'all-push' rule.
 all: build
 
 # For the following OS/ARCH expansions, we transform OS/ARCH into OS_ARCH
@@ -91,24 +88,7 @@ build-image-%:
 		GOOS=$(firstword $(subst _, ,$*)) \
 		GOARCH=$(lastword $(subst _, ,$*))
 
-# container-%:
-# 	@$(MAKE) container \
-# 		--no-print-directory \
-# 		GOOS=$(firstword $(subst _, ,$*)) \
-# 		GOARCH=$(lastword $(subst _, ,$*))
-
-push-%:
-	@$(MAKE) push-image \
-		--no-print-directory \
-		GOOS=$(firstword $(subst _, ,$*)) \
-		GOARCH=$(lastword $(subst _, ,$*))
-
 all-build: $(addprefix build-, $(subst /,_, $(ALL_PLATFORMS)))
-
-# all-container: $(addprefix container-, $(subst /,_, $(ALL_PLATFORMS)))
-all-build-image: $(addprefix build-image-, $(subst /,_, $(ALL_PLATFORMS)))
-
-all-push: $(addprefix push-, $(subst /,_, $(ALL_PLATFORMS)))
 
 # Mounts a ramdisk on ./go/bin
 mount-ramdisk:
@@ -121,15 +101,7 @@ unmount-ramdisk:
 
 build: $(OUTBIN)
 
-# The following structure defeats Go's (intentional) behavior to always touch
-# result files, even if they have not changed.  This will still run `go` but
-# will not trigger further work if nothing has actually changed.
-# $(OUTBIN): .go/$(OUTBIN).stamp
-# 	@true
-
-# This will build the binary under ./.go and update the real binary iff needed.
-#.PHONY: .go/$(OUTBIN).stamp
-#.go/$(OUTBIN).stamp: $(BUILD_DIRS)
+# This will build the binary under ./.go
 $(OUTBIN): $(BUILD_DIRS)
 	@echo "making $(OUTBIN)"
 	@docker run \
@@ -154,41 +126,68 @@ $(OUTBIN): $(BUILD_DIRS)
 			BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z') \
 			./build/build.sh \
 		";
-#	@if ! cmp -s .go/$(OUTBIN) $(OUTBIN); then \
-		mv .go/$(OUTBIN) $(OUTBIN); \
-		date >$@; \
-	fi
 
-build-image: $(BUILD_DIRS)
+BUILDX_NAME := $(shell basename $$(pwd))
+BUILDX_TAG_LATEST ?= false
+BUILDX_PUSH ?= false
+BUILDX_ARGS = \
+	--progress plain \
+	--cache-from type=local,src=/tmp/.buildx-cache \
+	--cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
+	--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
+	--build-arg "BUILD_DIR=$(BUILD_DIR)" \
+	--build-arg "ARCH=$(ARCH)" \
+	--build-arg "OS=$(OS)" \
+	--build-arg "GO111MODULE=$(GO111MODULE)" \
+	--build-arg "GOFLAGS=$(GOFLAGS)" \
+	--build-arg "OUTBIN=$(OUTBIN)" \
+	--build-arg "VERSION=$(VERSION)" \
+	--build-arg "COMMIT_SHA1=$(SHA_SHORT)" \
+	--build-arg "BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
+	--build-arg "PWD=$(PWD)" \
+	--label OS=$(OS) \
+	--label ARCH=$(ARCH) \
+	--label VERSION=$(VERSION) \
+	--label COMMIT_SHA1=$(COMMIT_SHA1) \
+	--label BUILD_DATE=$(BUILD_DATE) \
+	--tag "$(IMAGE):$(VERSION)" \
+	--tag "$(IMAGE):$(VERSION)-$(SHA_SHORT)" \
+	--metadata-file metadata.json \
+	--push="$(BUILDX_PUSH)" \
+	--file Dockerfile \
+	.
+ifeq ($(BUILDX_TAG_LATEST),true)
+    BUILDX_ARGS += --tag "$(IMAGE):latest"
+endif
+
+PHONY: build-setup
+build-setup: $(BUILD_DIRS)
+	@echo "Setting up buildx"
+	@docker run --rm --privileged tonistiigi/binfmt:latest --install all
+	@docker buildx inspect $(BUILDX_NAME) 2>/dev/null || docker buildx create --name $(BUILDX_NAME) --driver docker-container
+	@docker buildx use $(BUILDX_NAME)
+	@docker buildx ls
+	@docker buildx inspect $(BUILDX_NAME)
+
+	@echo "Generating Dockerfile"
+	@cp Dockerfile.tmpl Dockerfile
+	@sed -i 's/$$BIN/$(BIN)/' Dockerfile
+
+	@echo "Running docker buildx"
+	@mkdir -p /tmp/.buildx-cache
+	@echo "BUILDX_ARGS: $(BUILDX_ARGS)"
 	@echo "IMAGE: $(IMAGE)"
 	@echo "VERSION: $(VERSION)"
 	@echo "SHA_SHORT: $(SHA_SHORT)"
-	@docker build \
-		--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
-		--build-arg "BUILD_DIR=$(BUILD_DIR)" \
-		--build-arg "ARCH=$(ARCH)" \
-		--build-arg "OS=$(OS)" \
-		--build-arg "GO111MODULE=$(GO111MODULE)" \
-		--build-arg "GOFLAGS=$(GOFLAGS)" \
-		--build-arg "OUTBIN=$(OUTBIN)" \
-		--build-arg "VERSION=$(VERSION)" \
-		--build-arg "COMMIT_SHA1=$(SHA_SHORT)" \
-		--build-arg "BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
-		--build-arg "PWD=$(PWD)" \
-		--build-arg "BIN=$(BIN)" \
-		--tag "$(IMAGE):$(VERSION)" \
-		--tag "$(IMAGE):$(VERSION)-$(TAG_SUFFIX)" \
-		--tag "$(IMAGE):$(VERSION)-$(SHA_SHORT)-$(TAG_SUFFIX)" \
-		--tag "$(IMAGE):latest" \
-		--file "$(BUILD_DIR)/Dockerfile" \
-		"."
-	@docker history --no-trunc "$(IMAGE):latest"
+	@export DOCKER_BUILDKIT=1
 
-push-image: $(BUILD_DIRS)
-	@docker push "$(IMAGE):$(VERSION)"
-	@docker push "$(IMAGE):$(VERSION)-$(TAG_SUFFIX)"
-	@docker push "$(IMAGE):$(VERSION)-$(SHA_SHORT)-$(TAG_SUFFIX)"
-	@docker push "$(IMAGE):latest"
+build-image: build-setup
+	@docker buildx build $(BUILDX_ARGS) --platform $(OS)/$(ARCH) --load
+	@docker history --no-trunc "$(IMAGE):$(VERSION)"
+	@docker inspect "$(IMAGE):$(VERSION)"
+
+buildx-image: build-setup
+	@docker buildx build $(BUILDX_ARGS) --platform $(shell echo $(ALL_PLATFORMS) | tr ' ' ',' )
 
 # Example: make shell CMD="-c 'date > datefile'"
 shell: $(BUILD_DIRS)
@@ -205,42 +204,8 @@ shell: $(BUILD_DIRS)
 		-v $(BUILD_GOCACHE):/.cache \
 		--env HTTP_PROXY=$(HTTP_PROXY) \
 		--env HTTPS_PROXY=$(HTTPS_PROXY) \
-		$(SHELL_IMAGE) \
+		$(BUILD_IMAGE) \
 		/bin/sh $(CMD)
-
-# Used to track state in hidden files.
-# DOTFILE_IMAGE = $(subst /,_,$(IMAGE))-$(TAG)
-
-# container: .container-$(DOTFILE_IMAGE) say_container_name
-# .container-$(DOTFILE_IMAGE): bin/$(OS)_$(ARCH)/$(BIN) Dockerfile.in
-# 	@sed \
-# 		-e 's|{ARG_BIN}|$(BIN)|g' \
-# 		-e 's|{ARG_ARCH}|$(ARCH)|g' \
-# 		-e 's|{ARG_OS}|$(OS)|g' \
-# 		-e 's|{ARG_FROM}|$(BASEIMAGE)|g' \
-# 		Dockerfile.in > .dockerfile-$(OS)_$(ARCH)
-# 	@docker build -t $(IMAGE):$(TAG) -f .dockerfile-$(OS)_$(ARCH) .
-# 	@docker images -q $(IMAGE):$(TAG) > $@
-
-# say_container_name:
-# 	@echo "container: $(IMAGE):$(TAG)"
-
-# push: .push-$(DOTFILE_IMAGE) say_push_name
-# .push-$(DOTFILE_IMAGE): .container-$(DOTFILE_IMAGE)
-# 	@docker push $(IMAGE):$(TAG)
-
-# say_push_name:
-# 	@echo "pushed: $(IMAGE):$(TAG)"
-
-# manifest-list: push
-# 	platforms=$$(echo $(ALL_PLATFORMS) | sed 's/ /,/g'); \
-# 	manifest-tool \
-# 		--username=oauth2accesstoken \
-# 		--password=$$(gcloud auth print-access-token) \
-# 		push from-args \
-# 		--platforms "$$platforms" \
-# 		--template $(IMAGE):$(VERSION)__OS_ARCH \
-# 		--target $(IMAGE):$(VERSION)
 
 version:
 	@echo $(VERSION)
@@ -290,9 +255,10 @@ down: $(DEV_DOCKER_COMPOSE_YML)
 # clean: container-clean bin-clean
 clean: bin-clean
 
-# container-clean:
-# 	rm -rf .container-* .dockerfile-* .push-*
-
 bin-clean:
 	chmod -R +w $(BUILD_DIRS)
 	rm -rf $(BUILD_DIRS)
+
+build-image-clean:
+	rm -f Dockerfile
+	rm -f metadata.json
