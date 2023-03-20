@@ -39,17 +39,17 @@ func TestHandleConnection(t *testing.T) {
 	message := "L 10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
 
 	// Gameserver sends log to forwarder
-	go func() {
+	go func(tb testing.TB) {
 		conn, err := net.Dial("udp", listenAddr)
 		if err != nil {
-			t.Fatal(err)
+			tb.Fatal(err)
 		}
 		defer conn.Close()
 
 		if _, err := fmt.Fprintf(conn, message); err != nil {
-			t.Fatal(err)
+			tb.Fatal(err)
 		}
-	}()
+	}(t)
 
 	// Allow the time for the connection to be added
 	time.Sleep(time.Millisecond * 100)
@@ -74,17 +74,17 @@ func TestJanitor(t *testing.T) {
 
 	// Gameserver sends log to forwarder
 	message := "L 10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
-	go func() {
+	go func(tb testing.TB) {
 		conn, err := net.Dial("udp", listenAddr)
 		if err != nil {
-			t.Fatal(err)
+			tb.Fatal(err)
 		}
 		defer conn.Close()
 
 		if _, err := fmt.Fprintf(conn, message); err != nil {
-			t.Fatal(err)
+			tb.Fatal(err)
 		}
-	}()
+	}(t)
 
 	// Allow the janitor some time to cleanup
 	time.Sleep(timeout * 100)
@@ -108,17 +108,17 @@ func TestForwardedMessage(t *testing.T) {
 
 	// Gameserver sends log to forwarder
 	message := "L 10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
-	go func() {
+	go func(tb testing.TB) {
 		conn, err := net.Dial("udp", listenAddr)
 		if err != nil {
-			t.Fatal(err)
+			tb.Fatal(err)
 		}
 		defer conn.Close()
 
 		if _, err := fmt.Fprintf(conn, message); err != nil {
-			t.Fatal(err)
+			tb.Fatal(err)
 		}
-	}()
+	}(t)
 
 	// Daemon receives log from forwarder and test
 	expectedMessage := prependStr + message
