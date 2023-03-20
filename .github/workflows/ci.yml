@@ -37,6 +37,7 @@ jobs:
         bash <(curl -s https://codecov.io/bash)
   build-docker-image:
     needs: [test]
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
     strategy:
       matrix:
         os: [linux, darwin, windows]
