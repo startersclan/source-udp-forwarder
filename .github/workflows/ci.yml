@@ -12,55 +12,32 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
     - uses: actions/checkout@v1
-    - name: Display system info (linux)
-      run: |
-        set -e
-        hostname
-        whoami
-        cat /etc/*release
-        lscpu
-        free
-        df -h
-        pwd
-        docker info
-        docker version
     - name: Code Coverage
       run: |
         set -e
         apk add --no-cache git make || sudo apt-get install -y git make
         sudo -s /bin/sh -c 'make test' # Force make to run docker under root user
         bash <(curl -s https://codecov.io/bash)
+
   build-docker-image:
     needs: [test]
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64]
     name: build-docker-image-${{ matrix.os }}-${{ matrix.arch }}
-    runs-on: ubuntu-18.04
     env:
       GOOS: ${{ matrix.os }}
       GOARCH: ${{ matrix.arch }}
     steps:
     - uses: actions/checkout@v1
-    - name: Display system info (linux)
-      run: |
-        set -e
-        hostname
-        whoami
-        cat /etc/*release
-        lscpu
-        free
-        df -h
-        pwd
-        docker info
-        docker version
     - name: Login to docker registry
       run: echo "${DOCKERHUB_REGISTRY_PASSWORD}" | docker login -u "${DOCKERHUB_REGISTRY_USER}" --password-stdin
       env:
@@ -75,6 +52,7 @@ jobs:
     - name: Clean-up
       run: docker logout
       if: always()
+
   update-draft-release:
     needs: [test, build-docker-image]
     if: github.ref == 'refs/heads/master'
@@ -84,15 +62,16 @@ jobs:
       - uses: toolmantim/release-drafter@v5.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   release:
     needs: [test, build-docker-image, update-draft-release]
     if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64]
     name: release-${{ matrix.os }}-${{ matrix.arch }}
-    runs-on: ubuntu-18.04
     env:
       GOOS: ${{ matrix.os }}
       GOARCH: ${{ matrix.arch }}
