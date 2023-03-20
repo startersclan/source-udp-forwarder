@@ -11,6 +11,21 @@ on:
     - master
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build binaries
+      run: |
+        set -e
+        make all-build
+    - uses: actions/upload-artifact@v3
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: binaries-${{ github.sha }}
+        path: |
+          bin/*
+
   test:
     runs-on: ubuntu-latest
     env:
@@ -64,7 +79,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release:
-    needs: [test, build-docker-image, update-draft-release]
+    needs: [build, test, build-docker-image]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     strategy:
@@ -72,20 +87,24 @@ jobs:
         os: [linux, darwin, windows]
         arch: [amd64]
     name: release-${{ matrix.os }}-${{ matrix.arch }}
-    env:
-      GOOS: ${{ matrix.os }}
-      GOARCH: ${{ matrix.arch }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Build
-      run: |
-        set -e
-        make build "GOOS=$GOOS" "GOARCH=$GOARCH"
-    - name: Release
-      uses: softprops/action-gh-release@v1
+    # Drafts your next Release notes as Pull Requests are merged into "master"
+    - id: release-drafter
+      uses: release-drafter/release-drafter@v5
+      with:
+        config-name: release-drafter.yml
+        publish: false
+        name: ${{ github.ref_name }}
+        tag: ${{ github.ref_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/download-artifact@v3
       with:
+        name: binaries-${{ github.sha }}
+    - uses: softprops/action-gh-release@v1
+      with:
+        name: ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        body: ${{ steps.release-drafter.outputs.body }}
         files: |
-          ./.go/bin/*
+          bin/*
