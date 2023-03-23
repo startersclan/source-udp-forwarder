@@ -17,8 +17,8 @@
 set -eu
 
 export CGO_ENABLED=1
-export GO111MODULE=${GO111MODULE:-on}
 export GOFLAGS="${GOFLAGS:-}"
+export GO111MODULE=on
 
 TARGETS=$(for d in "$@"; do echo ./$d/...; done)
 

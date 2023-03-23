@@ -18,9 +18,6 @@ BIN := $(shell basename $$PWD)
 GOOS ?= linux
 GOARCH ?= amd64
 
-# Turn on / off go modules.
-GO111MODULE = on
-
 # Specify GOFLAGS. E.g. "-mod=vendor"
 GOFLAGS =
 
@@ -113,7 +110,6 @@ $(OUTBIN): | $(BUILD_DIRS)
 		/bin/sh -c " \
 			ARCH=$(ARCH) \
 			OS=$(OS) \
-			GO111MODULE=$(GO111MODULE) \
 			GOFLAGS=$(GOFLAGS) \
 			OUTBIN=$(OUTBIN) \
 			VERSION=$(VERSION) \
@@ -134,7 +130,6 @@ BUILDX_ARGS = \
 	--build-arg "BUILD_BIN_DIR=$(BUILD_BIN_DIR)" \
 	--build-arg "ARCH=$(ARCH)" \
 	--build-arg "OS=$(OS)" \
-	--build-arg "GO111MODULE=$(GO111MODULE)" \
 	--build-arg "GOFLAGS=$(GOFLAGS)" \
 	--build-arg "OUTBIN=$(OUTBIN)" \
 	--build-arg "VERSION=$(VERSION)" \
@@ -189,7 +184,6 @@ shell: $(BUILD_DIRS)
 		-ti \
 		--rm \
 		-u $$(id -u):$$(id -g) \
-		-e GO111MODULE="$(GO111MODULE)" \
 		-e GOFLAGS="$(GOFLAGS)" \
 		-v $(PWD):$(PWD) \
 		-w $(PWD) \
@@ -217,7 +211,6 @@ test: $(BUILD_DIRS)
 			ARCH=$(ARCH) \
 			OS=$(OS) \
 			VERSION=$(VERSION) \
-			GO111MODULE=$(GO111MODULE) \
 			GOFLAGS=$(GOFLAGS) \
 			COVERAGE_FILE=$(COVERAGE_FILE) \
 			./build/test.sh $(SRC_DIRS) \
@@ -266,6 +259,3 @@ checksums-clean:
 	rm -f $(BUILD_BIN_DIR)/*.sha1
 	rm -f $(BUILD_BIN_DIR)/*.sha256
 	rm -f $(BUILD_BIN_DIR)/*.sha512
-
-version:
-	@echo $(VERSION)
