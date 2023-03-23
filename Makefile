@@ -71,6 +71,9 @@ OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
 
 COVERAGE_FILE ?= $(BUILD_GOPATH)/coverage.txt
 
+$(BUILD_DIRS):
+	@mkdir -p $@
+
 # If you want to build all binaries, see the 'all-build' rule.
 all: build
 
@@ -90,15 +93,6 @@ build-image-%:
 		GOARCH=$(lastword $(subst _, ,$*))
 
 all-build: $(addprefix build-, $(subst /,_, $(ALL_PLATFORMS)))
-
-# Mounts a ramdisk on ./go/bin
-mount-ramdisk:
-	@mkdir -p $(BUILD_BIN_DIR)
-	@mount | grep $(BUILD_BIN_DIR) && echo "tmpfs already mounted on $(BUILD_BIN_DIR)" || ( sudo mount -t tmpfs -o size=128M tmpfs $(BUILD_BIN_DIR) && mount | grep $(BUILD_BIN_DIR) && echo "tmpfs mounted on $(BUILD_BIN_DIR)" )
-
-# Unmounts a ramdisk on ./go/bin
-unmount-ramdisk:
-	@mount | grep $(BUILD_BIN_DIR) && sudo umount $(BUILD_BIN_DIR) && echo "unmount $(BUILD_BIN_DIR)" || echo "nothing to unmount on $(BUILD_BIN_DIR)"
 
 build: $(OUTBIN)
 
@@ -162,7 +156,7 @@ ifeq ($(BUILDX_TAG_LATEST),true)
 	BUILDX_ARGS += --tag "$(IMAGE):latest"
 endif
 
-build-setup: $(BUILD_DIRS)
+build-image-setup: $(BUILD_DIRS)
 	@echo "Setting up buildx"
 	@docker run --rm --privileged tonistiigi/binfmt:latest --install all
 	@docker buildx inspect $(BUILDX_NAME) 2>/dev/null || docker buildx create --name $(BUILDX_NAME) --driver docker-container
@@ -180,12 +174,12 @@ build-setup: $(BUILD_DIRS)
 	@echo "VERSION: $(VERSION)"
 	@echo "SHA_SHORT: $(SHA_SHORT)"
 
-build-image: build build-setup
+build-image: build build-image-setup
 	docker buildx build $(BUILDX_ARGS) --platform $(OS)/$(ARCH) --load
 	@docker history --no-trunc "$(IMAGE):$(VERSION)"
 	@docker inspect "$(IMAGE):$(VERSION)"
 
-buildx-image: all-build build-setup
+buildx-image: all-build build-image-setup
 	docker buildx build $(BUILDX_ARGS) --platform $(shell echo $(ALL_PLATFORMS) | tr ' ' ',' )
 
 # Example: make shell CMD="-c 'date > datefile'"
@@ -205,9 +199,6 @@ shell: $(BUILD_DIRS)
 		--env HTTPS_PROXY=$(HTTPS_PROXY) \
 		$(BUILD_IMAGE) \
 		/bin/sh $(CMD)
-
-version:
-	@echo $(VERSION)
 
 # We replace .go and .cache with empty directories in the container
 test: $(BUILD_DIRS)
@@ -242,9 +233,6 @@ checksums: $(BUILD_DIRS) checksums-clean
 		sha512sum "$$i" > "$$i.sha512"; echo "$(BUILD_BIN_DIR)/$$i.sha512"; \
 	done
 
-$(BUILD_DIRS):
-	@mkdir -p $@
-
 # Development docker-compose up. Run build first
 DEV_DOCKER_COMPOSE_YML := docker-compose.yml
 up: $(DEV_DOCKER_COMPOSE_YML)
@@ -254,6 +242,15 @@ up: $(DEV_DOCKER_COMPOSE_YML)
 # Development docker-compose down
 down: $(DEV_DOCKER_COMPOSE_YML)
 	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f $(DEV_DOCKER_COMPOSE_YML) down
+
+# Mounts a ramdisk on ./go/bin
+mount-ramdisk:
+	@mkdir -p $(BUILD_BIN_DIR)
+	@mount | grep $(BUILD_BIN_DIR) && echo "tmpfs already mounted on $(BUILD_BIN_DIR)" || ( sudo mount -t tmpfs -o size=128M tmpfs $(BUILD_BIN_DIR) && mount | grep $(BUILD_BIN_DIR) && echo "tmpfs mounted on $(BUILD_BIN_DIR)" )
+
+# Unmounts a ramdisk on ./go/bin
+unmount-ramdisk:
+	@mount | grep $(BUILD_BIN_DIR) && sudo umount $(BUILD_BIN_DIR) && echo "unmount $(BUILD_BIN_DIR)" || echo "nothing to unmount on $(BUILD_BIN_DIR)"
 
 clean: bin-clean build-image-clean
 
@@ -269,3 +266,6 @@ checksums-clean:
 	rm -f $(BUILD_BIN_DIR)/*.sha1
 	rm -f $(BUILD_BIN_DIR)/*.sha256
 	rm -f $(BUILD_BIN_DIR)/*.sha512
+
+version:
+	@echo $(VERSION)
