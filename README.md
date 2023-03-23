@@ -59,60 +59,28 @@ Requires `make`, `docker`, and `docker-compose` if you want all `make` commands 
 
 Requires [`go`](https://golang.org/doc/install) only if you are developing.
 
-### Build
-
 ```sh
+# Print usage
+make help
+
+# Build
 make build # Defaults to linux amd64
 make build GOOS=linux GOARCH=arm64 # For arm64
-```
 
-### Build and run
-
-```sh
-make up # Defaults to linux amd64
-make up GOOS=linux GOARCH=arm64 # For arm64
-```
-
-### Build docker image
-
-```sh
+# Build docker image
 make build-image # Defaults to linux amd64
 make build-image GOOS=linux GOARCH=arm64 # For arm64
-```
 
-### Build multiarch docker images
-
-```sh
+# Build multiarch docker images
 make buildx-image # Build
 make buildx-image REGISTRY=xxx REGISTRY_USER=xxx BUILDX_PUSH=true BUILDX_TAG_LATEST=true # Build and push
-```
 
-### Test
-
-```sh
-make test
-```
-
-### Mount a ramdisk on `./.go/bin`
-
-```sh
-make mount-ramdisk
-```
-
-### Unmount ramdisk on `./.go/bin`
-
-```sh
-make unmount-ramdisk
-```
-
-### Clean
-
-```sh
-make clean
-```
-
-### Shell
-
-```sh
+# Start a shell in a container
 make shell
+
+# Test
+make test
+
+# Cleanup
+make clean
 ```
