@@ -34,7 +34,8 @@ REGISTRY_USER ?= startersclan
 
 # This version-strategy uses git tags to set the version string
 # Get the following from left to right: tag > branch > branch of detached HEAD commit
-VERSION = $(shell git describe --tags --dirty 2>/dev/null)
+VERSION = $(shell (git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD 2>/dev/null || git name-rev --name-only "$$( git rev-parse --short HEAD )" | sed 's@.*/@@') | tr '/' '-' | head -c10)
+
 # Get the short SHA
 SHA_SHORT = $(shell git rev-parse --short HEAD)
 
