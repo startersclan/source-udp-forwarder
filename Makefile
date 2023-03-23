@@ -158,7 +158,7 @@ BUILDX_ARGS = \
 	--file Dockerfile.$(BIN) \
 	.
 ifeq ($(BUILDX_TAG_LATEST),true)
-    BUILDX_ARGS += --tag "$(IMAGE):latest"
+	BUILDX_ARGS += --tag "$(IMAGE):latest"
 endif
 
 build-setup: $(BUILD_DIRS)
@@ -234,8 +234,12 @@ test: $(BUILD_DIRS)
 coverage:
 	@$(MAKE) test
 
-checksums:
-	@cd "$(BUILD_BIN_DIR)" && shasum -a 256 * > checksums.txt
+checksums: $(BUILD_DIRS) checksums-clean
+	@cd $(BUILD_BIN_DIR); for i in $$(ls); do \
+		sha1sum "$$i" > "$$i.sha1"; echo "$(BUILD_BIN_DIR)/$$i.sha1";	\
+		sha256sum "$$i" > "$$i.sha256"; echo "$(BUILD_BIN_DIR)/$$i.sha256"; \
+		sha512sum "$$i" > "$$i.sha512"; echo "$(BUILD_BIN_DIR)/$$i.sha512"; \
+	done
 
 $(BUILD_DIRS):
 	@mkdir -p $@
@@ -259,3 +263,8 @@ bin-clean:
 build-image-clean:
 	rm -f Dockerfile
 	rm -f metadata.json
+
+checksums-clean:
+	rm -f $(BUILD_BIN_DIR)/*.sha1
+	rm -f $(BUILD_BIN_DIR)/*.sha256
+	rm -f $(BUILD_BIN_DIR)/*.sha512
