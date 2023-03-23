@@ -21,20 +21,14 @@ ALL_PLATFORMS ?= linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
 REGISTRY ?= docker.io
 REGISTRY_USER ?= startersclan
 
-###
-### These variables should not need tweaking.
-###
-
-# This version-strategy uses git tags to set the version string
+# This version-strategy uses git refs to set the version string
 # Get the following from left to right: tag > branch > branch of detached HEAD commit
 VERSION = $(shell (git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD 2>/dev/null || git name-rev --name-only "$$( git rev-parse --short HEAD )" | sed 's@.*/@@') | tr '/' '-' | head -c10)
 
 # Get the short SHA
 SHA_SHORT = $(shell git rev-parse --short HEAD)
 
-SRC_DIRS := cmd pkg # directories which hold app source (not vendored)
-
-# Used internally.  Users should pass GOOS and/or GOARCH.
+# Used internally. Users should pass GOOS and/or GOARCH.
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS 2>/dev/null || echo 'linux'))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH 2>/dev/null || echo 'amd64'))
 
@@ -148,7 +142,7 @@ ifeq ($(BUILDX_TAG_LATEST),true)
 	BUILDX_ARGS += --tag "$(IMAGE):latest"
 endif
 
-build-image-setup: $(BUILD_DIRS)
+build-image-setup:
 	@echo "Setting up buildx"
 	@docker run --rm --privileged tonistiigi/binfmt:latest --install all
 	@docker buildx inspect $(BUILDX_NAME) 2>/dev/null || docker buildx create --name $(BUILDX_NAME) --driver docker-container
@@ -179,7 +173,7 @@ buildx-image: all-build build-image-setup
 
 # Example: make shell CMD="-c 'date > datefile'"
 shell: # @HELP Launch a shell in the containerized build environment
-shell: $(BUILD_DIRS)
+shell: | $(BUILD_DIRS)
 	@echo "Launching a shell in the containerized build environment"
 	@docker run \
 		-ti \
@@ -201,7 +195,7 @@ shell: $(BUILD_DIRS)
 		/bin/sh $(CMD)
 
 test: # @HELP Run tests, as defined in ./build/test.sh
-test: $(BUILD_DIRS)
+test: | $(BUILD_DIRS)
 	@docker run \
 		-i \
 		--rm \
@@ -219,7 +213,7 @@ test: $(BUILD_DIRS)
 		--env HTTP_PROXY="$(HTTP_PROXY)" \
 		--env HTTPS_PROXY="$(HTTPS_PROXY)" \
 		$(BUILD_IMAGE) \
-		./build/test.sh $(SRC_DIRS)
+		./build/test.sh ./...
 
 coverage: # @HELP Make coverage report
 coverage:
@@ -227,7 +221,7 @@ coverage:
 	@echo "$(COVERAGE_FILE)"
 
 checksums: # @HELP Make checksums for binaries
-checksums: $(BUILD_DIRS) checksums-clean
+checksums: | $(BUILD_DIRS) checksums-clean
 	@cd $(BUILD_BIN_DIR); for i in $$(ls); do \
 		sha1sum "$$i" > "$$i.sha1"; echo "$(BUILD_BIN_DIR)/$$i.sha1";	\
 		sha256sum "$$i" > "$$i.sha256"; echo "$(BUILD_BIN_DIR)/$$i.sha256"; \
