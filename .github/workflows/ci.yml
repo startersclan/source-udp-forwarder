@@ -27,6 +27,7 @@ jobs:
     - name: Build binaries
       run: |
         make all-build
+        make checksums
     - name: Tar binaries
       run: |
         tar -cvf binaries.tar .go/bin
