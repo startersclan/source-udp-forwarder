@@ -10,6 +10,18 @@
             "group": "build"
         },
         {
+            "label": "make build-image",
+            "type": "shell",
+            "command": "make build-image",
+            "group": "build"
+        },
+        {
+            "label": "make buildx-image",
+            "type": "shell",
+            "command": "make buildx-image",
+            "group": "build"
+        },
+        {
             "label": "make test",
             "type": "shell",
             "command": "make test",

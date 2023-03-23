@@ -14,17 +14,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v1
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          .go/.cache
+          .go/pkg
+        key: ${{ runner.os }}-go-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-go-
     - name: Build binaries
       run: |
-        set -e
         make all-build
-    - uses: actions/upload-artifact@v3
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Tar binaries
+      run: |
+        tar -cvf binaries.tar .go/bin
+    - name: Upload binaries
+      uses: actions/upload-artifact@v3
       with:
         name: binaries-${{ github.sha }}
         path: |
-          bin/*
+          binaries.tar
 
   test:
     runs-on: ubuntu-latest
@@ -32,79 +43,96 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
     - uses: actions/checkout@v1
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          .go/.cache
+          .go/pkg
+        key: ${{ runner.os }}-go-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-go-
     - name: Code Coverage
       run: |
-        set -e
-        apk add --no-cache git make || sudo apt-get install -y git make
-        sudo -s /bin/sh -c 'make test' # Force make to run docker under root user
+        make test
         bash <(curl -s https://codecov.io/bash)
 
-  build-docker-image:
-    needs: [test]
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+  docker:
+    needs: [build, test]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [linux, darwin, windows]
-        arch: [amd64]
-    name: build-docker-image-${{ matrix.os }}-${{ matrix.arch }}
-    env:
-      GOOS: ${{ matrix.os }}
-      GOARCH: ${{ matrix.arch }}
     steps:
     - uses: actions/checkout@v1
+    # Ensure the same binaries are used from the build job
+    - name: Download binaries
+      uses: actions/download-artifact@v3
+      with:
+        name: binaries-${{ github.sha }}
+    - name: Untar binaries
+      run: |
+        tar -xvf binaries.tar
     - name: Login to docker registry
-      run: echo "${DOCKERHUB_REGISTRY_PASSWORD}" | docker login -u "${DOCKERHUB_REGISTRY_USER}" --password-stdin
       env:
         DOCKERHUB_REGISTRY_USER: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
         DOCKERHUB_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_REGISTRY_PASSWORD }}
+      run: echo "${DOCKERHUB_REGISTRY_PASSWORD}" | docker login -u "${DOCKERHUB_REGISTRY_USER}" --password-stdin
     - name: Build and push image
       env:
         DOCKERHUB_REGISTRY_USER: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
       run: |
-        set -e
-        make build-image push-image "GOOS=$GOOS" "GOARCH=$GOARCH" "REGISTRY_USER=$DOCKERHUB_REGISTRY_USER"
-    - name: Clean-up
-      run: docker logout
-      if: always()
+        make buildx-image "REGISTRY_USER=$DOCKERHUB_REGISTRY_USER" "BUILDX_PUSH=${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') }}"
 
   update-draft-release:
-    needs: [test, build-docker-image]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into "master"
-      - uses: toolmantim/release-drafter@v5.2.0
+      - id: release-drafter
+        uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          echo "${{ steps.release-drafter.outputs.body }}"
 
   release:
-    needs: [build, test, build-docker-image]
+    needs: [build, test, docker]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [linux, darwin, windows]
-        arch: [amd64]
-    name: release-${{ matrix.os }}-${{ matrix.arch }}
     steps:
     # Drafts your next Release notes as Pull Requests are merged into "master"
     - id: release-drafter
       uses: release-drafter/release-drafter@v5
       with:
         config-name: release-drafter.yml
-        publish: false
+        publish: true
         name: ${{ github.ref_name }}
         tag: ${{ github.ref_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - uses: actions/download-artifact@v3
+    # Ensure the same binaries are used from the build job
+    - name: Download binaries
+      uses: actions/download-artifact@v3
       with:
         name: binaries-${{ github.sha }}
+    - name: Untar binaries
+      run: |
+        tar -xvf binaries.tar
     - uses: softprops/action-gh-release@v1
       with:
         name: ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
         body: ${{ steps.release-drafter.outputs.body }}
         files: |
-          bin/*
+          .go/bin/*
+
+  update-dockerhub-description:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Docker Hub Description
+      uses: peter-evans/dockerhub-description@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
+        password: ${{ secrets.DOCKERHUB_REGISTRY_PASSWORD }}
+        repository: ${{ github.repository }}
+        short-description: ${{ github.event.repository.description }}

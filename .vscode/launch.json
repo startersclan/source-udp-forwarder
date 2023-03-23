@@ -8,63 +8,14 @@
             "name": "Launch file",
             "type": "go",
             "request": "launch",
-            "mode": "debug",
+            "mode": "auto",
             "program": "${fileDirname}",
             "env":{
-                "GOPATH": "${workspaceFolder}/.go",
                 "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
+                "GOMODCACHE": "${workspaceFolder}/.go/pkg/mod"
             },
-            "args": [
-                "--udp.listen-address=127.0.0.1:26999",
-                "--udp.forward-address=127.0.0.1:27500",
-                "--forward.proxy-key=abcdef",
-                "--forward.gameserver-ip=192.168.0.1",
-                "--forward.gameserver-port=23456",
-                "--log.level=DEBUG"
-            ],
-            "output": "${workspaceFolder}/.go/bin/debug",
             "showLog": true,
-            "trace": "error",
-            "dlvLoadConfig": {
-                "followPointers": true,
-                "maxVariableRecurse": 1,
-                "maxStringLen": 1048576,
-                "maxArrayValues": 1024,
-                "maxStructFields": -1
-            },
-        },
-        {
-            // See: https://github.com/Microsot/vscode-go/wiki/Debugging-Go-code-using-VS-Code
-            "name": "Launch test package",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${workspaceFolder}/pkg/forwarder",
-            "env":{
-                "GOPATH": "${workspaceFolder}/.go",
-                "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
-            },
-            "output": "${workspaceFolder}/.go/bin/debug.test",
-            "showLog": true,
-            "trace": "error",
-        },
-        {
-            "name": "Launch test function",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${workspaceFolder}/pkg/forwarder",
-            "env":{
-                "GOPATH": "${workspaceFolder}/.go",
-                "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
-            },
-            "args": [
-                "-test.run",
-                "TestForward"
-            ],
-            "output": "${workspaceFolder}/.go/bin/debug.test",
-            "showLog": true,
-            "trace": "error",
-        },
+            "trace": "error"
+        }
     ]
 }
