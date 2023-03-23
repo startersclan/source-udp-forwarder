@@ -1,2 +1,5 @@
 /.go
+Dockerfile.*
+!Dockerfile.tmpl
 coverage.txt
+metadata.json

@@ -1,0 +1,52 @@
+# syntax=docker/dockerfile:1
+
+# Build stage
+# ARG BUILD_IMAGE
+# FROM $BUILD_IMAGE AS builder
+# ARG BUILD_DIR
+# ARG OS
+# ARG ARCH
+# ARG GO111MODULE
+# ARG GOFLAGS
+# ARG OUTBIN
+# ARG VERSION
+# ARG COMMIT_SHA1
+# ARG BUILD_DATE
+# ARG PWD
+# WORKDIR $PWD
+# COPY . .
+# RUN set -eux; \
+#     $BUILD_DIR/build.sh; \
+#     ls -al $OUTBIN; \
+#     $OUTBIN -version
+
+# Final stage
+FROM alpine:3.8 AS final
+# Get buildx automatic platform vars: https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG BUILDPLATFORM
+ARG BUILDOS
+ARG BUILDARCH
+ARG BUILDVARIANT
+RUN set -e; \
+    echo "TARGETPLATFORM=$TARGETPLATFORM"; \
+    echo "TARGETOS=$TARGETOS"; \
+    echo "TARGETARCH=$TARGETARCH"; \
+    echo "TARGETVARIANT=$TARGETVARIANT"; \
+    echo "BUILDPLATFORM=$BUILDPLATFORM"; \
+    echo "BUILDOS=$BUILDOS"; \
+    echo "BUILDARCH=$BUILDARCH"; \
+    echo "BUILDVARIANT=$BUILDVARIANT";
+ARG BUILD_BIN_DIR
+ARG VERSION
+ARG OUTBIN
+# Use buildx automatic platform vars
+COPY $BUILD_BIN_DIR/{{ $BIN }}_${VERSION}_${TARGETOS}_${TARGETARCH} {{ $BIN }}
+# COPY --from=builder $OUTBIN /{{ $BIN }}
+RUN /{{ $BIN }} -version
+RUN apk --no-cache add ca-certificates
+EXPOSE 26999
+ENTRYPOINT [ "/{{ $BIN }}" ]
