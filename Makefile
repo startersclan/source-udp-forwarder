@@ -13,13 +13,9 @@
 # limitations under the License.
 
 # The binary to build (just the basename).
-BIN := $(shell basename $$PWD)
+BIN ?= source-udp-forwarder
 
-GOOS ?= linux
-GOARCH ?= amd64
-
-# Specify GOFLAGS. E.g. "-mod=vendor"
-GOFLAGS =
+ALL_PLATFORMS ?= linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
 
 # Where to push the docker image.
 REGISTRY ?= docker.io
@@ -38,20 +34,17 @@ SHA_SHORT = $(shell git rev-parse --short HEAD)
 
 SRC_DIRS := cmd pkg # directories which hold app source (not vendored)
 
-ALL_PLATFORMS := linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
-
 # Used internally.  Users should pass GOOS and/or GOARCH.
-OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
-ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
-
-# BASEIMAGE ?= gcr.io/distroless/static
+OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS 2>/dev/null || echo 'linux'))
+ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH 2>/dev/null || echo 'amd64'))
 
 IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
-TAG_SUFFIX := $(OS)-$(ARCH)
 
 BUILD_IMAGE ?= golang:1.20
 
-PWD := $$PWD
+# Specify GOFLAGS. E.g. "-mod=vendor"
+GOFLAGS ?=
+GOFLAGS := $(GOFLAGS) -modcacherw
 
 # Build directories
 BUILD_GOPATH := .go
@@ -66,13 +59,17 @@ BUILD_DIRS := $(BUILD_GOPATH) \
 
 OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
 
-COVERAGE_FILE ?= $(BUILD_GOPATH)/coverage.txt
+COVERAGE_FILE = $(BUILD_GOPATH)/coverage.txt
+
+HTTP_PROXY ?=
+HTTPS_PROXY ?=
+
+# If you want to build all binaries, see the 'all-build' rule.
+all: # @HELP Build binaries for one platform ($OS/$ARCH)
+all: build
 
 $(BUILD_DIRS):
 	@mkdir -p $@
-
-# If you want to build all binaries, see the 'all-build' rule.
-all: build
 
 # For the following OS/ARCH expansions, we transform OS/ARCH into OS_ARCH
 # because make pattern rules don't match with embedded '/' characters.
@@ -100,23 +97,21 @@ $(OUTBIN): | $(BUILD_DIRS)
 		-i \
 		--rm \
 		-u $$(id -u):$$(id -g) \
-		-v $(PWD):$(PWD) \
-		-w $(PWD) \
-		-v $(PWD)/$(BUILD_GOPATH):/go \
-		-v $(PWD)/$(BUILD_GOCACHE):/.cache \
-		--env HTTP_PROXY=$(HTTP_PROXY) \
-		--env HTTPS_PROXY=$(HTTPS_PROXY) \
+		-v $$(pwd):/src \
+		-w /src \
+		-v $$(pwd)/$(BUILD_GOPATH):/go \
+		-v $$(pwd)/$(BUILD_GOCACHE):/.cache \
+		--env ARCH="$(ARCH)" \
+		--env OS="$(OS)" \
+		--env VERSION="$(VERSION)" \
+		--env COMMIT_SHA1="$(SHA_SHORT)" \
+		--env BUILD_DATE="$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
+		--env GOFLAGS="$(GOFLAGS)" \
+		--env OUTBIN="$(OUTBIN)" \
+		--env HTTP_PROXY="$(HTTP_PROXY)" \
+		--env HTTPS_PROXY="$(HTTPS_PROXY)" \
 		$(BUILD_IMAGE) \
-		/bin/sh -c " \
-			ARCH=$(ARCH) \
-			OS=$(OS) \
-			GOFLAGS=$(GOFLAGS) \
-			OUTBIN=$(OUTBIN) \
-			VERSION=$(VERSION) \
-			COMMIT_SHA1=$(SHA_SHORT) \
-			BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z') \
-			./build/build.sh \
-		";
+		./build/build.sh ./...
 
 BUILDX_NAME := $(shell basename $$(pwd))
 BUILDX_TAG_LATEST ?= false
@@ -125,17 +120,19 @@ BUILDX_ARGS = \
 	--progress plain \
 	--cache-from type=local,src=/tmp/.buildx-cache \
 	--cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
-	--build-arg "BUILD_IMAGE=$(BUILD_IMAGE)" \
-	--build-arg "BUILD_DIR=$(BUILD_DIR)" \
-	--build-arg "BUILD_BIN_DIR=$(BUILD_BIN_DIR)" \
-	--build-arg "ARCH=$(ARCH)" \
-	--build-arg "OS=$(OS)" \
-	--build-arg "GOFLAGS=$(GOFLAGS)" \
-	--build-arg "OUTBIN=$(OUTBIN)" \
-	--build-arg "VERSION=$(VERSION)" \
-	--build-arg "COMMIT_SHA1=$(SHA_SHORT)" \
-	--build-arg "BUILD_DATE=$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
-	--build-arg "PWD=$(PWD)" \
+	--build-arg BUILD_IMAGE="$(BUILD_IMAGE)" \
+	--build-arg BUILD_DIR="$(BUILD_DIR)" \
+	--build-arg BUILD_BIN_DIR="$(BUILD_BIN_DIR)" \
+	--build-arg ARCH="$(ARCH)" \
+	--build-arg OS="$(OS)" \
+	--build-arg GOFLAGS="$(GOFLAGS)" \
+	--build-arg OUTBIN="$(OUTBIN)" \
+	--build-arg VERSION="$(VERSION)" \
+	--build-arg COMMIT_SHA1="$(SHA_SHORT)" \
+	--build-arg BUILD_DATE="$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
+	--build-arg PWD="$(shell pwd)" \
+	--build-arg HTTP_PROXY="$(HTTP_PROXY)" \
+	--build-arg HTTPS_PROXY="$(HTTPS_PROXY)" \
 	--label OS=$(OS) \
 	--label ARCH=$(ARCH) \
 	--label VERSION=$(VERSION) \
@@ -145,7 +142,7 @@ BUILDX_ARGS = \
 	--tag "$(IMAGE):$(VERSION)-$(SHA_SHORT)" \
 	--metadata-file metadata.json \
 	--push="$(BUILDX_PUSH)" \
-	--file Dockerfile.$(BIN) \
+	--file "Dockerfile.$(BIN)" \
 	.
 ifeq ($(BUILDX_TAG_LATEST),true)
 	BUILDX_ARGS += --tag "$(IMAGE):latest"
@@ -169,56 +166,67 @@ build-image-setup: $(BUILD_DIRS)
 	@echo "VERSION: $(VERSION)"
 	@echo "SHA_SHORT: $(SHA_SHORT)"
 
+build-image: # @HELP Build docker image
 build-image: build build-image-setup
 	docker buildx build $(BUILDX_ARGS) --platform $(OS)/$(ARCH) --load
 	@docker history --no-trunc "$(IMAGE):$(VERSION)"
 	@docker inspect "$(IMAGE):$(VERSION)"
 
+# Example: buildx-image REGISTRY=xxx REGISTRY_USER=xxx BUILDX_PUSH=true BUILDX_TAG_LATEST=true
+buildx-image: # @HELP Build multi-architecture docker images using docker buildx
 buildx-image: all-build build-image-setup
 	docker buildx build $(BUILDX_ARGS) --platform $(shell echo $(ALL_PLATFORMS) | tr ' ' ',' )
 
 # Example: make shell CMD="-c 'date > datefile'"
+shell: # @HELP Launch a shell in the containerized build environment
 shell: $(BUILD_DIRS)
-	@echo "launching a shell in the containerized build environment"
+	@echo "Launching a shell in the containerized build environment"
 	@docker run \
 		-ti \
 		--rm \
 		-u $$(id -u):$$(id -g) \
-		-e GOFLAGS="$(GOFLAGS)" \
-		-v $(PWD):$(PWD) \
-		-w $(PWD) \
-		-v $(PWD)/$(BUILD_GOPATH):/go \
-		-v $(PWD)/$(BUILD_GOCACHE):/.cache \
-		--env HTTP_PROXY=$(HTTP_PROXY) \
-		--env HTTPS_PROXY=$(HTTPS_PROXY) \
+		-v $$(pwd):/src \
+		-w /src \
+		-v $$(pwd)/$(BUILD_GOPATH):/go \
+		-v $$(pwd)/$(BUILD_GOCACHE):/.cache \
+		--env ARCH="$(ARCH)" \
+		--env OS="$(OS)" \
+		--env VERSION="$(VERSION)" \
+		--env COMMIT_SHA1="$(SHA_SHORT)" \
+		--env BUILD_DATE="$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
+		--env GOFLAGS="$(GOFLAGS)" \
+		--env HTTP_PROXY="$(HTTP_PROXY)" \
+		--env HTTPS_PROXY="$(HTTPS_PROXY)" \
 		$(BUILD_IMAGE) \
 		/bin/sh $(CMD)
 
-# We replace .go and .cache with empty directories in the container
+test: # @HELP Run tests, as defined in ./build/test.sh
 test: $(BUILD_DIRS)
 	@docker run \
 		-i \
 		--rm \
 		-u $$(id -u):$$(id -g) \
-		-v $(PWD):$(PWD) \
-		-w $(PWD) \
-		-v $(PWD)/$(BUILD_GOPATH):/go \
-		-v $(PWD)/$(BUILD_GOCACHE):/.cache \
-		--env HTTP_PROXY=$(HTTP_PROXY) \
-		--env HTTPS_PROXY=$(HTTPS_PROXY) \
+		-v $$(pwd):$$(pwd) \
+		-w $$(pwd) \
+		-v $$(pwd)/$(BUILD_GOPATH):/go \
+		-v $$(pwd)/$(BUILD_GOCACHE):/.cache \
+		--env ARCH="$(ARCH)" \
+		--env OS="$(OS)" \
+		--env VERSION="$(VERSION)" \
+		--env COMMIT_SHA1="$(SHA_SHORT)" \
+		--env GOFLAGS="$(GOFLAGS)" \
+		--env COVERAGE_FILE="$(COVERAGE_FILE)" \
+		--env HTTP_PROXY="$(HTTP_PROXY)" \
+		--env HTTPS_PROXY="$(HTTPS_PROXY)" \
 		$(BUILD_IMAGE) \
-		/bin/sh -c " \
-			ARCH=$(ARCH) \
-			OS=$(OS) \
-			VERSION=$(VERSION) \
-			GOFLAGS=$(GOFLAGS) \
-			COVERAGE_FILE=$(COVERAGE_FILE) \
-			./build/test.sh $(SRC_DIRS) \
-		"
+		./build/test.sh $(SRC_DIRS)
 
+coverage: # @HELP Make coverage report
 coverage:
 	@$(MAKE) test
+	@echo "$(COVERAGE_FILE)"
 
+checksums: # @HELP Make checksums for binaries
 checksums: $(BUILD_DIRS) checksums-clean
 	@cd $(BUILD_BIN_DIR); for i in $$(ls); do \
 		sha1sum "$$i" > "$$i.sha1"; echo "$(BUILD_BIN_DIR)/$$i.sha1";	\
@@ -226,25 +234,24 @@ checksums: $(BUILD_DIRS) checksums-clean
 		sha512sum "$$i" > "$$i.sha512"; echo "$(BUILD_BIN_DIR)/$$i.sha512"; \
 	done
 
-# Development docker-compose up. Run build first
-DEV_DOCKER_COMPOSE_YML := docker-compose.yml
-up: $(DEV_DOCKER_COMPOSE_YML)
-	@$(MAKE) build
-	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f $(DEV_DOCKER_COMPOSE_YML) up
+up: # @HELP Run docker-compose up
+up: build docker-compose.yml
+	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f docker-compose.yml up
 
-# Development docker-compose down
-down: $(DEV_DOCKER_COMPOSE_YML)
-	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f $(DEV_DOCKER_COMPOSE_YML) down
+down: # @HELP Run docker-compose down
+down: docker-compose.yml
+	@OUTBIN=$(OUTBIN) BIN=$(BIN) UID=$$(id -u) GID=$$(id -g) docker-compose -f docker-compose.yml down
 
-# Mounts a ramdisk on ./go/bin
+mount-ramdisk: # @HELP Mount a ramdisk on ./go/bin
 mount-ramdisk:
 	@mkdir -p $(BUILD_BIN_DIR)
 	@mount | grep $(BUILD_BIN_DIR) && echo "tmpfs already mounted on $(BUILD_BIN_DIR)" || ( sudo mount -t tmpfs -o size=128M tmpfs $(BUILD_BIN_DIR) && mount | grep $(BUILD_BIN_DIR) && echo "tmpfs mounted on $(BUILD_BIN_DIR)" )
 
-# Unmounts a ramdisk on ./go/bin
+unmount-ramdisk: # @HELP Unmount a ramdisk on ./go/bin
 unmount-ramdisk:
 	@mount | grep $(BUILD_BIN_DIR) && sudo umount $(BUILD_BIN_DIR) && echo "unmount $(BUILD_BIN_DIR)" || echo "nothing to unmount on $(BUILD_BIN_DIR)"
 
+clean: # @HELP Remove built binaries and temporary files
 clean: bin-clean build-image-clean
 
 bin-clean:
@@ -259,3 +266,27 @@ checksums-clean:
 	rm -f $(BUILD_BIN_DIR)/*.sha1
 	rm -f $(BUILD_BIN_DIR)/*.sha256
 	rm -f $(BUILD_BIN_DIR)/*.sha512
+
+version: # @HELP Print version
+version:
+	@echo "$(VERSION)"
+
+help: # @HELP Print this message
+help:
+	@echo "Variables:"
+	@echo "  BIN = $(BIN)"
+	@echo "  OS = $(OS)"
+	@echo "  ARCH = $(ARCH)"
+	@echo "  ALL_PLATFORMS = $(ALL_PLATFORMS)"
+	@echo "  GOFLAGS = $(GOFLAGS)"
+	@echo "  REGISTRY = $(REGISTRY)"
+	@echo "  REGISTRY_USER = $(REGISTRY_USER)"
+	@echo "  VERSION = $(VERSION)"
+	@echo "  SHA_SHORT = $(SHA_SHORT)"
+	@echo
+	@echo "TARGETS:"
+	@grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST)     \
+		| awk '                                   \
+			BEGIN {FS = ": *# *@HELP"};           \
+			{ printf "  %-30s %s\n", $$1, $$2 };  \
+		'
