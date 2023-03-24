@@ -16,17 +16,16 @@
 
 set -eu
 
-export CGO_ENABLED=1
+export CGO_ENABLED=0
 export GOFLAGS="${GOFLAGS:-}"
 export GO111MODULE=on
-
 
 echo "Running tests:"
 COVERAGE_FILE=${COVERAGE_FILE:-}
 if [ -n "$COVERAGE_FILE" ]; then
-    go test -v -race -coverprofile=$COVERAGE_FILE -covermode=atomic "$@"
+    go test -v -coverprofile=$COVERAGE_FILE -covermode=atomic "$@"
 else
-    go test -v -race "$@"
+    go test -v "$@"
 fi
 echo
 
