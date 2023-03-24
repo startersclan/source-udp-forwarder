@@ -96,24 +96,6 @@ jobs:
         publish: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # Ensure the same binaries are used from the build job
-    - name: Download binaries
-      uses: actions/download-artifact@v3
-      with:
-        name: binaries-${{ github.sha }}
-    - name: Untar binaries
-      run: |
-        tar -xvf binaries.tar
-    # Upload binaries to draft
-    - uses: softprops/action-gh-release@v1
-      with:
-        draft: true
-        id: ${{ steps.release-drafter.outputs.id }}
-        name: ${{ steps.release-drafter.outputs.name }}
-        tag_name: ${{ steps.release-drafter.outputs.tag_name }}
-        body: ${{ steps.release-drafter.outputs.body }}
-        files: |
-          .go/bin/*
 
   release:
     needs: [build,test,docker]
