@@ -24,8 +24,18 @@ Binaries are on the [releases](https://github.com/startersclan/source-udp-forwar
 
 ### Docker
 
+Docker images are available on [Docker Hub](https://hub.docker.com/r/startersclan/source-udp-forwarder).
+
+To run the latest stable version:
+
 ```sh
 docker run -it startersclan/source-udp-forwarder:latest
+```
+
+To run a specific version, for example `v0.1.0`:
+
+```sh
+docker run -it startersclan/source-udp-forwarder:v0.1.0
 ```
 
 ## Demo
