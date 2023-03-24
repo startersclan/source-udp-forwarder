@@ -21,5 +21,7 @@ export GOARCH="${ARCH}"
 export GOOS="${OS}"
 export GOFLAGS="$GOFLAGS"
 export GO111MODULE=on
+export BIN="$BIN"
+export OUTBIN="$OUTBIN"
 
-go build -o "$OUTBIN" -ldflags "-s -w -extldflags \"-static\" -X $(go list -m)/cmd.VERSION=$VERSION -X $(go list -m)/cmd.COMMIT_SHA1=$COMMIT_SHA1 -X $(go list -m)/cmd.BUILD_DATE=$BUILD_DATE"
+go build -o "$PWD/$OUTBIN" -ldflags "-s -w -extldflags \"-static\" -X $(go list -m)/cmd.VERSION=$VERSION -X $(go list -m)/cmd.COMMIT_SHA1=$COMMIT_SHA1 -X $(go list -m)/cmd.BUILD_DATE=$BUILD_DATE" ./cmd/$BIN
