@@ -1,0 +1,69 @@
+# In this example, you will see that the Counterstrike 1.6 gameserver sends its UDP logs to `source-udp-forwarder` which then proxies (forwards) logs to the HLStatsX:CE perl daemon.
+# This will work for all GoldSource games (https://developer.valvesoftware.com/wiki/GoldSrc), such as Half-Life and Condition Zero
+version: '2.2'
+services:
+  # 1. Counter-Strike 1.6 gameserver sends UDP logs to source-udp-forwarder
+  # See: https://github.com/startersclan/docker-sourceservers
+  cstrike:
+    image: goldsourceservers/cstrike:latest
+    network_mode: host
+    stdin_open: true
+    tty: true
+    stop_signal: SIGKILL
+    entrypoint:
+      - /bin/bash
+    command:
+      - -c
+      - |
+          set -eu
+          exec hlds_linux -console -noipx -secure -game cstrike +map de_dust2 +maxplayers 32 +sv_lan 0 +ip 0.0.0.0 +port 27015 +log on +logaddress_add 127.0.0.1 26999
+
+  # 2. The proxy forwards gameserver logs to the daemon
+  # source-udp-forwarder: https://github.com/startersclan/source-udp-forwarder
+  source-udp-forwarder:
+    image: startersclan/source-udp-forwarder:master
+    environment:
+      - UDP_LISTEN_ADDR=:26999
+      - UDP_FORWARD_ADDR=127.0.0.1:27500
+      - FORWARD_PROXY_KEY=somedaemonsecret # The daemon's proxy secret
+      - FORWARD_GAMESERVER_IP=192.168.1.100 # The gameserver's IP as registered in the HLStatsX:CE database
+      - FORWARD_GAMESERVER_PORT=27015 # The gameserver's IP as registered in the HLStatsX:CE database
+      - LOG_LEVEL=DEBUG
+      - LOG_FORMAT=txt
+    network_mode: host
+
+  # 3. HLStatsX:CE perl daemon accepts the gameserver logs. Gameserver Logs are parsed and stats are recorded
+  # The FORWARD_PROXY_KEY secret can only be setup in the HLStatsX:CE Web Admin Panel
+  # HLStatsX:CE perl daemon: https://github.com/startersclan/docker-hlstatsxce-daemon
+  # NOTE: Currently, as of v1.6.19, the daemon crashes upon startup. You will need to fix perl errors and rebuild the image.
+  daemon:
+    image: startersclan/docker-hlstatsxce-daemon:v1.6.19-geoip-alpine-3.8
+    environment:
+      - LOG_LEVEL=1
+      - DB_HOST=127.0.0.1:3306
+      - DB_NAME=hlstatsxce
+      - DB_USER=hlstatsxce
+      - DB_PASSWORD=hlstatsxce
+      - DNS_RESOLVE_IP=false
+      - LISTEN_IP=127.0.0.1
+      - LISTEN_PORT=27500
+      - RCON=true
+    network_mode: host
+
+  # 4. The DB for HLStatsX:CE
+  db:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=someverystrongpassword
+      - MYSQL_USER=hlstatsxce
+      - MYSQL_PASSWORD=hlstatsxce
+      - MYSQL_DATABASE=hlstatsxce
+    volumes:
+      - db-volume:/var/lib/mysql
+    network_mode: host
+
+  # 5. HLStatsX:CE web UI: https://github.com/NomisCZ/hlstatsx-community-edition/
+  # Currently, as of the time of writing, there is no docker image. The HLStatsX:CE web frontend must be setup by you.
+
+volumes:
+  db-volume:
