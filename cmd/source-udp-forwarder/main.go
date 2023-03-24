@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"flag"
@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	udpforwarder "github.com/startersclan/source-udp-forwarder/pkg/forwarder"
+	version "github.com/startersclan/source-udp-forwarder/pkg/version"
 )
 
 func getEnv(key string, defaultVal string) string {
@@ -56,7 +57,7 @@ func run() error {
 		log.SetFormatter(&log.TextFormatter{})
 	}
 
-	log.Printf(getVersion())
+	log.Printf(version.GetVersion())
 	if *showVersion {
 		return nil
 	}
@@ -97,7 +98,7 @@ func run() error {
 	select {}
 }
 
-func Execute() {
+func main() {
 	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cmd
+package version
 
 import (
 	"fmt"
@@ -28,6 +28,6 @@ var (
 	BUILD_DATE  = "<Will be added by go build>"
 )
 
-func getVersion() string {
+func GetVersion() string {
 	return fmt.Sprintf("Version: %s, Commit SHA: %s, Build Date: %s, Go Version: %s", VERSION, COMMIT_SHA1, BUILD_DATE, runtime.Version())
 }

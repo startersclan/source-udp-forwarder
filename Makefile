@@ -101,6 +101,7 @@ $(OUTBIN): | $(BUILD_DIRS)
 		--env COMMIT_SHA1="$(SHA_SHORT)" \
 		--env BUILD_DATE="$(shell date -u '+%Y-%m-%dT%H:%M:%S%z')" \
 		--env GOFLAGS="$(GOFLAGS)" \
+		--env BIN="$(BIN)" \
 		--env OUTBIN="$(OUTBIN)" \
 		--env HTTP_PROXY="$(HTTP_PROXY)" \
 		--env HTTPS_PROXY="$(HTTPS_PROXY)" \
