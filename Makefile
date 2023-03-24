@@ -254,7 +254,7 @@ bin-clean:
 	rm -rf $(BUILD_DIRS)
 
 build-image-clean:
-	rm -f Dockerfile
+	rm -f Dockerfile.$(BIN)
 	rm -f metadata.json
 
 checksums-clean:

@@ -26,7 +26,7 @@ COVERAGE_FILE=${COVERAGE_FILE:-}
 if [ -n "$COVERAGE_FILE" ]; then
     go test -v -race -coverprofile=$COVERAGE_FILE -covermode=atomic "$@"
 else
-    go test -v -race ${TARGETS}
+    go test -v -race "$@"
 fi
 echo
 
