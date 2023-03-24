@@ -15,7 +15,7 @@
 # The binary to build (just the basename).
 BIN ?= source-udp-forwarder
 
-ALL_PLATFORMS ?= linux/386 linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/mips64le linux/s390x
+ALL_PLATFORMS ?= darwin/arm64 darwin/amd64 linux/386 linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/mips64le linux/s390x windows/amd64
 
 # Where to push the docker image.
 REGISTRY ?= docker.io
@@ -31,6 +31,10 @@ SHA_SHORT = $(shell git rev-parse --short HEAD)
 # Used internally. Users should pass GOOS and/or GOARCH.
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS 2>/dev/null || echo 'linux'))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH 2>/dev/null || echo 'amd64'))
+BIN_EXT :=
+ifeq ($(OS), windows)
+	BIN_EXT := .exe
+endif
 IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
 
 BUILD_IMAGE ?= golang:1.20
@@ -50,7 +54,7 @@ BUILD_DIRS := $(BUILD_GOPATH) \
 			  $(BUILD_GOCACHE) \
 			  $(BUILD_BIN_DIR) \
 
-OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)
+OUTBIN = $(BUILD_BIN_DIR)/$(BIN)_$(VERSION)_$(OS)_$(ARCH)$(BIN_EXT)
 
 COVERAGE_FILE = $(BUILD_GOPATH)/coverage.txt
 
@@ -138,10 +142,10 @@ BUILDX_ARGS = \
 	--push="$(BUILDX_PUSH)" \
 	--file "Dockerfile.$(BIN)" \
 	.
+BUILDX_PLATFORMS=$(shell printf "$(ALL_PLATFORMS)" | tr ' ' '\n' | grep linux | tr '\n' ',' | sed 's/,$$//')
 ifeq ($(BUILDX_TAG_LATEST),true)
 	BUILDX_ARGS += --tag "$(IMAGE):latest"
 endif
-
 build-image-setup:
 	@echo "Setting up buildx"
 	@docker run --rm --privileged tonistiigi/binfmt:latest --install all
@@ -169,7 +173,7 @@ build-image: build build-image-setup
 # Example: buildx-image REGISTRY=xxx REGISTRY_USER=xxx BUILDX_PUSH=true BUILDX_TAG_LATEST=true
 buildx-image: # @HELP Build multi-architecture docker images using docker buildx
 buildx-image: all-build build-image-setup
-	docker buildx build $(BUILDX_ARGS) --platform $(shell echo $(ALL_PLATFORMS) | tr ' ' ',' )
+	docker buildx build $(BUILDX_ARGS) --platform $(BUILDX_PLATFORMS)
 
 # Example: make shell CMD="-c 'date > datefile'"
 shell: # @HELP Launch a shell in the containerized build environment
@@ -277,6 +281,7 @@ help:
 	@echo "  REGISTRY_USER = $(REGISTRY_USER)"
 	@echo "  VERSION = $(VERSION)"
 	@echo "  SHA_SHORT = $(SHA_SHORT)"
+	@echo "  BUILDX_PLATFORMS = $(BUILDX_PLATFORMS)"
 	@echo
 	@echo "TARGETS:"
 	@grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST)     \
