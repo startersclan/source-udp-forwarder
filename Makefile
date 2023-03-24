@@ -15,7 +15,7 @@
 # The binary to build (just the basename).
 BIN ?= source-udp-forwarder
 
-ALL_PLATFORMS ?= linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/s390x
+ALL_PLATFORMS ?= linux/386 linux/amd64 linux/arm linux/arm64 linux/ppc64le linux/mips64le linux/s390x
 
 # Where to push the docker image.
 REGISTRY ?= docker.io
@@ -31,7 +31,6 @@ SHA_SHORT = $(shell git rev-parse --short HEAD)
 # Used internally. Users should pass GOOS and/or GOARCH.
 OS := $(if $(GOOS),$(GOOS),$(shell go env GOOS 2>/dev/null || echo 'linux'))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH 2>/dev/null || echo 'amd64'))
-
 IMAGE ?= $(REGISTRY)/$(REGISTRY_USER)/$(BIN)
 
 BUILD_IMAGE ?= golang:1.20

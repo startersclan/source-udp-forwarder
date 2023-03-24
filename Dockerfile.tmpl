@@ -20,7 +20,7 @@
 #     $OUTBIN -version
 
 # Final stage
-FROM alpine:3.8 AS final
+FROM busybox:1.35 AS final
 # Get buildx automatic platform vars: https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 ARG TARGETPLATFORM
 ARG TARGETOS
@@ -46,6 +46,5 @@ ARG OUTBIN
 COPY $BUILD_BIN_DIR/{{ $BIN }}_${VERSION}_${TARGETOS}_${TARGETARCH} {{ $BIN }}
 # COPY --from=builder $OUTBIN /{{ $BIN }}
 RUN /{{ $BIN }} -version
-RUN apk --no-cache add ca-certificates
 EXPOSE 26999
 ENTRYPOINT [ "/{{ $BIN }}" ]
