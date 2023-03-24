@@ -124,7 +124,6 @@ jobs:
     - uses: softprops/action-gh-release@v1
       with:
         draft: false
-        id: ${{ steps.release-drafter.outputs.id }}
         name: ${{ steps.release-drafter.outputs.name }}
         tag_name: ${{ steps.release-drafter.outputs.tag_name }}
         body: ${{ steps.release-drafter.outputs.body }}
