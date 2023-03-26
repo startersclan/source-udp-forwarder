@@ -75,7 +75,7 @@ Run `source-udp-forwarder -help` to see command line usage:
 | Environment variable | Description |
 |---|---|
 | `UDP_LISTEN_ADDR`  | `<IP>:<PORT>` to listen on for incoming packets. Default value: `:26999` |
-| `UDP_FORWARD_ADDR`  | `<IP>:<PORT>` or `<HOSTNAME>:<PORT>` to which incoming packets will be forwarded. Default value: `1.2.3.4:1013` |
+| `UDP_FORWARD_ADDR`  | `<IP>:<PORT>` or `<HOSTNAME>:<PORT>` to which incoming packets will be forwarded. Default value: `127.0.0.1:27500` |
 | `FORWARD_PROXY_KEY`  | The [`PROXY_KEY`](https://github.com/startersclan/hlstatsx-community-edition/blob/v1.6.19/scripts/hlstats.pl#L1780) secret defined in the HLStatsX:CE Web Admin Panel. Default value: `XXXXX` |
 | `FORWARD_GAMESERVER_IP`  | IP that the sent packet should include. Default value: `127.0.0.1` |
 | `FORWARD_GAMESERVER_PORT`  | Port that the sent packet should include. Default value: `27015` |
