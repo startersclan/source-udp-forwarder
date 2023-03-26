@@ -250,11 +250,12 @@ unmount-ramdisk:
 	@mount | grep $(BUILD_BIN_DIR) && sudo umount $(BUILD_BIN_DIR) && echo "unmount $(BUILD_BIN_DIR)" || echo "nothing to unmount on $(BUILD_BIN_DIR)"
 
 clean: # @HELP Remove built binaries and temporary files
-clean: bin-clean build-image-clean
-
-bin-clean:
+clean: build-image-clean
 	chmod -R +w $(BUILD_DIRS)
 	rm -rf $(BUILD_DIRS)
+
+bin-clean:
+	rm -rf $(BUILD_BIN_DIR)/*
 
 build-image-clean:
 	rm -f Dockerfile.$(BIN)
