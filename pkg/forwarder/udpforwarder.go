@@ -90,7 +90,7 @@ func (f *Forwarder) run() {
 		log.Debugf("Received buf length: %d, string: %s", n, string(buf[:n]))
 		log.Traceln(buf)
 
-		log.Debugf("prependStrBytes len: %d, string: %s", len(buf[:n]), f.prependStr)
+		log.Debugf("prependStrBytes len: %d, string: %s", len(f.prependStr), f.prependStr)
 		log.Traceln(f.prependStrBytes)
 
 		log.Debugf("Prepending prependStrBytes to buf")
