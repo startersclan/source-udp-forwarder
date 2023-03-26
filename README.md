@@ -12,7 +12,7 @@ A simple UDP forwarder to the HLStatsX:CE daemon.
 
 The [HLStatsX:CE perl daemon](https://github.com/startersclan/hlstatsx-community-edition/tree/master/scripts) infers a gameserver's IP:PORT from the client socket from which it receives (reads) the gameserver's `logaddress_add` logs. This means both the daemon and the gameservers have to run on the same network.
 
-This UDP forwarder eliminates this need by leveraging on an already built-in proxy protocol in the daemon - It simply runs as a sidecar to the gameserver, receives logs from the gameserver, prepends each log line with a spoofed `IP:PORT` as well as a secret [`PROXY_KEY`](https://github.com/startersclan/hlstatsx-community-edition/blob/v1.6.19/scripts/hlstats.pl#L1780) only known by the daemon, and finally sends that log line to the daemon. The daemon reads the gameserver's `IP:PORT` from each log line, rather than the usual inferring it from the client socket.
+This UDP forwarder eliminates this need by leveraging on an already built-in proxy protocol in the daemon - It simply runs as a sidecar to the gameserver, receives logs from the gameserver, prepends each log line with a spoofed `IP:PORT` as well as a [`proxy_key`](https://github.com/startersclan/hlstatsx-community-edition/blob/1.6.19/scripts/hlstats.pl#L1780) secret only known by the daemon, and finally sends that log line to the daemon. The daemon reads the gameserver's `IP:PORT` from each log line, rather than the usual inferring it from the client socket.
 
 `source-udp-forwarder` uses less than `3MB` of memory.
 
@@ -76,7 +76,7 @@ Run `source-udp-forwarder -help` to see command line usage:
 |---|---|
 | `UDP_LISTEN_ADDR`  | `<IP>:<PORT>` to listen on for incoming packets. Default value: `:26999` |
 | `UDP_FORWARD_ADDR`  | `<IP>:<PORT>` or `<HOSTNAME>:<PORT>` to which incoming packets will be forwarded. Default value: `127.0.0.1:27500` |
-| `FORWARD_PROXY_KEY`  | The [`PROXY_KEY`](https://github.com/startersclan/hlstatsx-community-edition/blob/v1.6.19/scripts/hlstats.pl#L1780) secret defined in the HLStatsX:CE Web Admin Panel. Default value: `XXXXX` |
+| `FORWARD_PROXY_KEY`  | The [`proxy_key`](https://github.com/startersclan/hlstatsx-community-edition/blob/1.6.19/scripts/hlstats.pl#L1780) secret defined in the HLStatsX:CE Web Admin Panel. Default value: `XXXXX` |
 | `FORWARD_GAMESERVER_IP`  | IP that the sent packet should include. Default value: `127.0.0.1` |
 | `FORWARD_GAMESERVER_PORT`  | Port that the sent packet should include. Default value: `27015` |
 | `LOG_LEVEL` | Log level. Defaults to `INFO`. May be one of the following (starting with the most verbose): `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`. Default value: `INFO`|
