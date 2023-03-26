@@ -81,7 +81,7 @@ jobs:
       env:
         DOCKERHUB_REGISTRY_USER: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
       run: |
-        make buildx-image "REGISTRY_USER=$DOCKERHUB_REGISTRY_USER" "BUILDX_PUSH=${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') }}"
+        make buildx-image "REGISTRY_USER=$DOCKERHUB_REGISTRY_USER" "BUILDX_TAG_LATEST={{ startsWith(github.ref, 'refs/tags/') }}" "BUILDX_PUSH=${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') }}"
 
   update-draft-release:
     needs: [build,test,docker]
