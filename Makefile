@@ -226,10 +226,9 @@ coverage:
 
 checksums: # @HELP Make checksums for binaries
 checksums: | $(BUILD_DIRS) checksums-clean
-	@cd $(BUILD_BIN_DIR); for i in $$(ls); do \
-		sha1sum "$$i" > "$$i.sha1"; echo "$(BUILD_BIN_DIR)/$$i.sha1";	\
-		sha256sum "$$i" > "$$i.sha256"; echo "$(BUILD_BIN_DIR)/$$i.sha256"; \
-		sha512sum "$$i" > "$$i.sha512"; echo "$(BUILD_BIN_DIR)/$$i.sha512"; \
+	@cd $(BUILD_BIN_DIR); sha256sum * > checksums.txt; echo $(BUILD_BIN_DIR)/checksums.txt
+	@cd $(BUILD_BIN_DIR); for i in $$(ls | grep -v checksums.txt); do \
+		sha256sum $$i > $$i.sha256; echo $(BUILD_BIN_DIR)/$$i.sha256; \
 	done
 
 up: # @HELP Run docker-compose up
@@ -262,9 +261,8 @@ build-image-clean:
 	rm -f metadata.json
 
 checksums-clean:
-	rm -f $(BUILD_BIN_DIR)/*.sha1
-	rm -f $(BUILD_BIN_DIR)/*.sha256
-	rm -f $(BUILD_BIN_DIR)/*.sha512
+	@rm -f $(BUILD_BIN_DIR)/checksums.txt
+	@rm -f $(BUILD_BIN_DIR)/*.sha256
 
 version: # @HELP Print version
 version:
