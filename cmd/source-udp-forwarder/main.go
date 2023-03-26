@@ -37,7 +37,7 @@ func run() error {
 
 	var (
 		listenAddress  = flag.String("udp.listen-address", getEnv("UDP_LISTEN_ADDR", ":26999"), "<IP>:<Port> to listen on for incoming packets.")
-		forwardAddress = flag.String("udp.forward-address", getEnv("UDP_FORWARD_ADDR", "1.2.3.4:1013"), "<IP>:<Port> to which incoming packets will be forwarded.")
+		forwardAddress = flag.String("udp.forward-address", getEnv("UDP_FORWARD_ADDR", "127.0.0.1:27500"), "<IP>:<Port> of the daemon to which incoming packets will be forwarded.")
 
 		proxyKey = flag.String("forward.proxy-key", getEnv("FORWARD_PROXY_KEY", "XXXXX"), "The PROXY_KEY secret defined in HLStatsX:CE settings.")
 		srcIp    = flag.String("forward.gameserver-ip", getEnv("FORWARD_GAMESERVER_IP", "127.0.0.1"), "IP that the sent packet should include.")

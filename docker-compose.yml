@@ -4,18 +4,14 @@ services:
     image: alpine:3.15
     environment:
       - UDP_LISTEN_ADDR=:26999
-      - UDP_FORWARD_ADDR=0.0.0.0:27500
+      - UDP_FORWARD_ADDR=127.0.0.1:27500
       - FORWARD_PROXY_KEY=XXXXX
       - FORWARD_GAMESERVER_IP=127.0.0.1
       - FORWARD_GAMESERVER_PORT=27015
       - LOG_LEVEL=DEBUG
-    # No need to publish ports, since we're using host networking. If you prefer container networking, comment out network_mode, and uncomment this.
-    # ports:
-    #   - target: 26999
-    #     published: 26999
-    #     protocol: udp
-    #     mode: host
-    network_mode: host
+      - LOG_FORMAT=txt
+    ports:
+      - 26999:26999/udp
     volumes:
       - ${OUTBIN?:err}:/${BIN?:err}
     entrypoint: /${BIN?:err}
