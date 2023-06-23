@@ -54,8 +54,8 @@ docker run -it startersclan/source-udp-forwarder:v0.1.0
 
 Here are some `docker-compose` examples demonstrating a gameserver UDP logs being proxied via `source-udp-forwarder` to the HLStatsX:CE perl daemon:
 
-- [Counterstrike 1.6](docs/hlds-cstrike-example/docker-compose.yml) - This will work for all [GoldSource](https://developer.valvesoftware.com/wiki/GoldSrc) games, such as Half-Life and Condition Zero
-- [Half-Life 2 multiplayer logs](docs/srcds-hl2mp-example/docker-compose.yml). This will work for all [Source](https://developer.valvesoftware.com/wiki/Source) games, such as Counter-Strike Global Offensive and Left 4 Dead 2.
+- [Counter-Strike 1.6](docs/hlds-cstrike-example/docker-compose.yml) - This will work for all [GoldSource](https://developer.valvesoftware.com/wiki/GoldSrc) games, such as Half-Life and Condition Zero
+- [Half-Life 2 Multiplayer](docs/srcds-hl2mp-example/docker-compose.yml). This will work for all [Source](https://developer.valvesoftware.com/wiki/Source) games, such as Counter-Strike Global Offensive and Left 4 Dead 2.
 
 ## Usage
 
