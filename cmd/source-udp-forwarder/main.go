@@ -4,9 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -28,7 +31,7 @@ func getEnvBool(key string) (envValBool bool) {
 	return
 }
 
-func run() error {
+func main() {
 	customFormatter := new(log.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.FullTimestamp = true
@@ -36,8 +39,9 @@ func run() error {
 	// log.Info("Hello Walrus before FullTimestamp=true")
 
 	var (
-		listenAddress  = flag.String("udp.listen-address", getEnv("UDP_LISTEN_ADDR", ":26999"), "<IP>:<Port> to listen on for incoming packets.")
-		forwardAddress = flag.String("udp.forward-address", getEnv("UDP_FORWARD_ADDR", "127.0.0.1:27500"), "<IP>:<Port> of the daemon to which incoming packets will be forwarded.")
+		listenAddress    = flag.String("listen-address", getEnv("LISTEN_ADDR", ":26999"), "<IP>:<PORT> to listen for incoming HTTP and UDP logs.")
+		udpListenAddress = flag.String("udp.listen-address", getEnv("UDP_LISTEN_ADDR", ":26999"), "<IP>:<PORT> to listen for incoming HTTP and UDP logs. (deprecated, use -listen-address instead)")
+		forwardAddress   = flag.String("udp.forward-address", getEnv("UDP_FORWARD_ADDR", "127.0.0.1:27500"), "<IP>:<PORT> of the daemon to which incoming packets will be forwarded.")
 
 		proxyKey = flag.String("forward.proxy-key", getEnv("FORWARD_PROXY_KEY", "XXXXX"), "The PROXY_KEY secret defined in HLStatsX:CE settings.")
 		srcIp    = flag.String("forward.gameserver-ip", getEnv("FORWARD_GAMESERVER_IP", "127.0.0.1"), "IP that the sent packet should include.")
@@ -50,6 +54,11 @@ func run() error {
 	)
 	flag.Parse()
 
+	// Support the deprecated flag
+	if *udpListenAddress != ":26999" {
+		listenAddress = udpListenAddress
+	}
+
 	switch *logFormat {
 	case "json":
 		log.SetFormatter(&log.JSONFormatter{})
@@ -59,7 +68,7 @@ func run() error {
 
 	log.Printf(version.GetVersion())
 	if *showVersion {
-		return nil
+		os.Exit(0)
 	}
 
 	*logLevel = strings.ToUpper(*logLevel)
@@ -89,18 +98,15 @@ func run() error {
 	log.Infof("Forward Gameserver IP: %s", *srcIp)
 	log.Infof("Forward Gameserver Port: %s", *srcPort)
 
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGHUP)
 	forwarder, err := udpforwarder.Forward(*listenAddress, *forwardAddress, udpforwarder.DefaultTimeout, fmt.Sprintf("PROXY Key=%s %s:%sPROXY ", *proxyKey, *srcIp, *srcPort))
 	if forwarder == nil || err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	// Block forever
-	select {}
-}
-
-func main() {
-	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		os.Exit(1)
-	}
+	<-sig
+	log.Infof("Received shutdown signal. Exiting")
+	forwarder.Close()
+	time.Sleep(10000)
 }

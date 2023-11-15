@@ -11,6 +11,7 @@ services:
       - LOG_LEVEL=DEBUG
       - LOG_FORMAT=txt
     ports:
+      - 26999:26999/tcp
       - 26999:26999/udp
     volumes:
       - ${OUTBIN?:err}:/${BIN?:err}

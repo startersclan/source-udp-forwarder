@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch main.go",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "cmd/source-udp-forwarder/main.go",
+            "env":{
+                "GOCACHE": "${workspaceFolder}/.go/.cache/go-build",
+                "GOMODCACHE": "${workspaceFolder}/.go/pkg/mod"
+            },
+            "showLog": true,
+            "trace": "error"
+        },
+        {
             "name": "Launch file",
             "type": "go",
             "request": "launch",
