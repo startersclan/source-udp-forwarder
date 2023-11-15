@@ -1,11 +1,10 @@
-# In this example, you will see that Half-Life 2 Multiplayer server sends its UDP logs to `source-udp-forwarder` which then proxies (forwards) logs to the HLStatsX:CE perl daemon
-# This will work for all Source games (https://developer.valvesoftware.com/wiki/Source), such as Counter-Strike Global Offensive and Left 4 Dead 2
+# In this example, you will see that Counter-Strike 2 server sends its HTTP logs to `source-udp-forwarder` which then proxies (forwards) logs to the HLStatsX:CE perl daemon.
 version: '2.2'
 services:
-  # 1. Half-Life 2 Multiplayer gameserver sends UDP logs to source-udp-forwarder
+  # 1. Counter-Strike 2 gameserver sends UDP logs to source-udp-forwarder
   # See: https://github.com/startersclan/docker-sourceservers
-  hl2mp:
-    image: sourceservers/hl2mp:latest
+  cs2:
+    image: sourceservers/cs2:latest
     volumes:
       - dns-volume:/dns:ro
     ports:
@@ -22,8 +21,7 @@ services:
       - -c
       - |
           set -eu
-          # srcds cannot log to 127.0.0.1 for some reason, but 0.0.0.0 works
-          exec srcds_linux -game hl2mp -port 27015 +map dm_lockdown +sv_lan 0 +log on +logaddress_add "$$( cat /dns/source-udp-forwarder ):26999"
+          exec game/bin/linuxsteamrt64/cs2 -dedicated -game cs2 -port 27015 +game_type 0 +game_mode 1 +mapgroup mg_active +map de_dust2 +log on +logaddress_add_http "http://$$( cat /dns/source-udp-forwarder ):26999"
 
   # 2. source-udp-forwarder proxy forwards gameserver logs to the daemon
   # See: https://github.com/startersclan/source-udp-forwarder
