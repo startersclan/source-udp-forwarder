@@ -4,6 +4,7 @@ package udpforwarder
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -33,6 +34,9 @@ type Forwarder struct {
 	prependStr      string
 	prependStrBytes []byte
 
+	prependHttpStr      string
+	prependHttpStrBytes []byte
+
 	connectCallback    func(addr string)
 	disconnectCallback func(addr string)
 
@@ -56,6 +60,10 @@ func Forward(src, dst string, timeout time.Duration, prependStr string) (*Forwar
 	forwarder.timeout = timeout
 	forwarder.prependStr = prependStr
 	forwarder.prependStrBytes = []byte(prependStr)
+	// Add an 'L'character and space to the front of each log line for HTTP. Needed for daemon.
+	// See: https://github.com/startersclan/hlstatsx-community-edition/blob/9a9aa8e54835674c54893ccb0c97fb79af01e375/src/scripts/hlstats.pl#L2349
+	forwarder.prependHttpStr = forwarder.prependStr + "L "
+	forwarder.prependHttpStrBytes = []byte(forwarder.prependHttpStr)
 
 	var err error
 	forwarder.src, err = net.ResolveUDPAddr("udp", src)
@@ -114,17 +122,18 @@ func (f *Forwarder) httpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		lines := strings.Split(string(reqBody[:]), "\n")
 		for _, l := range lines {
+			l = fmt.Sprintf("%s\x00", strings.TrimSpace(l)) // Trim and add null-terminate
 			buf := []byte(l)
 			n := len(buf)
 
 			log.Debugf("[HTTP] Received log from %s. buf length: %d, string: %s", r.RemoteAddr, n, string(buf[:n]))
 			log.Traceln(buf)
 
-			log.Debugf("[HTTP] prependStrBytes len: %d, string: %s", len(f.prependStr), f.prependStr)
-			log.Traceln(f.prependStrBytes)
+			log.Debugf("[HTTP] prependHttpStrBytes len: %d, string: %s", len(f.prependHttpStr), f.prependHttpStr)
+			log.Traceln(f.prependHttpStrBytes)
 
-			log.Debugf("[HTTP] Prepending prependStrBytes to buf")
-			newbuf := append([]byte(f.prependStrBytes), buf[:n]...)
+			log.Debugf("[HTTP] Prepending prependHttpStrBytes to buf")
+			newbuf := append([]byte(f.prependHttpStrBytes), buf[:n]...)
 			log.Debugf("[HTTP] newbuf len: %d, string: %s", len(newbuf), string(newbuf))
 			log.Traceln(newbuf)
 			go f.handle(newbuf, nil, r.RemoteAddr)
