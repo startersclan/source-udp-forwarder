@@ -164,7 +164,7 @@ func TestForwardedHttp(t *testing.T) {
 	defer forwarder.Close()
 
 	// Gameserver sends 3 logs (each with 2 lines) to the forwarder, each to forwarder
-	log := "L 10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
+	log := "10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
 	logs := []string{
 		log + "\n" + log,
 		log + "\n" + log,
@@ -179,7 +179,7 @@ func TestForwardedHttp(t *testing.T) {
 	}(t)
 
 	// Daemon receives log from forwarder
-	expectedLog := prependStr + log
+	expectedLog := fmt.Sprintf("%s%s%s\x00", prependStr, "L ", log)
 	addr, err := net.ResolveUDPAddr("udp", forwardAddr)
 	connD, err := net.ListenUDP("udp", addr)
 	defer connD.Close()
