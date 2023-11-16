@@ -10,9 +10,9 @@ A simple HTTP and UDP log forwarder to the [HLStatsX:CE daemon](https://github.c
 
 ## Agenda
 
-The [HLStatsX:CE perl daemon](https://github.com/startersclan/hlstatsx-community-edition/tree/master/scripts) infers a gameserver's IP:PORT from the client socket from which it receives (reads) the gameserver's `logaddress_add_http` or `logaddress_add` logs. This means both the daemon and the gameservers have to run on the same network.
+The [HLStatsX:CE perl daemon](https://github.com/startersclan/hlstatsx-community-edition/blob/v1.9.0/scripts) infers a gameserver's IP:PORT from the client socket from which it receives (reads) the gameserver's `logaddress_add_http` or `logaddress_add` logs. This means both the daemon and the gameservers have to run on the same network.
 
-This log forwarder eliminates this need by leveraging on an already built-in proxy protocol in the daemon - It simply runs as a sidecar to the gameserver, receives logs from the gameserver, prepends each log line with a spoofed `IP:PORT` as well as a [`proxy_key`](https://github.com/startersclan/hlstatsx-community-edition/blob/1.6.19/scripts/hlstats.pl#L1780) secret only known by the daemon, and finally sends that log line to the daemon. The daemon reads the gameserver's `IP:PORT` from each log line, rather than the usual inferring it from the client socket.
+This log forwarder eliminates this need by leveraging on an already built-in proxy protocol in the daemon - It simply runs as a sidecar to the gameserver, receives logs from the gameserver, prepends each log line with a spoofed `IP:PORT` as well as a [`proxy_key`](https://github.com/startersclan/hlstatsx-community-edition/blob/v1.9.0/scripts/hlstats.pl#L1621) secret only known by the daemon, and finally sends that log line to the daemon. The daemon reads the gameserver's `IP:PORT` from each log line, rather than the usual inferring it from the client socket.
 
 `source-udp-forwarder` uses less than `3MB` of memory.
 
