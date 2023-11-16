@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -59,10 +60,6 @@ func Forward(src, dst string, timeout time.Duration, prependStr string) (*Forwar
 	forwarder.timeout = timeout
 	forwarder.prependStr = prependStr
 	forwarder.prependStrBytes = []byte(prependStr)
-	// Add an 'L'character and space to the front of each log line for HTTP. Needed for daemon.
-	// See: https://github.com/startersclan/hlstatsx-community-edition/blob/9a9aa8e54835674c54893ccb0c97fb79af01e375/src/scripts/hlstats.pl#L2349
-	forwarder.prependHttpStr = forwarder.prependStr + "L "
-	forwarder.prependHttpStrBytes = []byte(forwarder.prependHttpStr)
 
 	var err error
 	forwarder.src, err = net.ResolveUDPAddr("udp", src)
@@ -129,11 +126,23 @@ func (f *Forwarder) httpHandler(w http.ResponseWriter, r *http.Request) {
 				log.Debugf("[HTTP] Received log from %s. buf length: %d, string: %s", r.RemoteAddr, n, string(buf[:n]))
 				log.Traceln(buf)
 
-				log.Debugf("[HTTP] prependHttpStrBytes len: %d, string: %s", len(f.prependHttpStr), f.prependHttpStr)
+				// Add an 'L' character and space to the front of each log line for HTTP. Needed for daemon.
+				// See: https://github.com/startersclan/hlstatsx-community-edition/blob/9a9aa8e54835674c54893ccb0c97fb79af01e375/src/scripts/hlstats.pl#L2349
+				match, _ := regexp.MatchString(`^L `, l)
+				prepend := ""
+				if match {
+					log.Debugf("[HTTP] No need to prepend 'L ' to log line")
+					prepend = f.prependStr
+				} else {
+					log.Debugf("[HTTP] Prepending 'L ' to log line")
+					prepend = f.prependStr + "L "
+				}
+
+				log.Debugf("[HTTP] prepend len: %d, string: %s", len(prepend), prepend)
 				log.Traceln(f.prependHttpStrBytes)
 
-				log.Debugf("[HTTP] Prepending prependHttpStrBytes to buf")
-				newbuf := append([]byte(f.prependHttpStrBytes), buf[:n]...)
+				log.Debugf("[HTTP] Prepending prepend to buf")
+				newbuf := append([]byte(prepend), buf[:n]...)
 				log.Debugf("[HTTP] newbuf len: %d, string: %s", len(newbuf), string(newbuf))
 				log.Traceln(newbuf)
 				go f.handle(newbuf, nil, r.RemoteAddr)

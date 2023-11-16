@@ -40,7 +40,7 @@ docker run -it startersclan/source-udp-forwarder:v0.3.0
 
 ## Demo
 
-1. Start the gameserver with cvar `logaddress_add_http "http://0.0.0.0:26999"` for Counter-Strike 2, `logaddress_add 0.0.0.0:26999` for `srcds` (`srcds` refuses to log to `logaddress_add 127.0.0.1:<PORT>` for some reason), or `logaddress_add 127.0.0.1 26999` for `hlds` servers, and cvar `log on`, to ensure the gameserver send logs to `source-udp-forwarder`.
+1. Start the gameserver with cvar `logaddress_add_http "http://127.0.0.1:26999"` for Counter-Strike 2, `logaddress_add 0.0.0.0:26999` for `srcds` (`srcds` refuses to log to `logaddress_add 127.0.0.1:<PORT>` for some reason), or `logaddress_add 127.0.0.1 26999` for `hlds` servers, and cvar `log on`, to ensure the gameserver send logs to `source-udp-forwarder`.
 
 2. Start `source-udp-forwarder` as a sidecar to the gameserver (both on localhost), setting the follow environment variables:
 
