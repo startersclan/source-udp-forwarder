@@ -4,7 +4,6 @@ package udpforwarder
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -122,21 +121,23 @@ func (f *Forwarder) httpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		lines := strings.Split(string(reqBody[:]), "\n")
 		for _, l := range lines {
-			l = fmt.Sprintf("%s\x00", strings.TrimSpace(l)) // Trim and add null-terminate
+			l = strings.TrimSpace(l)
 			buf := []byte(l)
 			n := len(buf)
 
-			log.Debugf("[HTTP] Received log from %s. buf length: %d, string: %s", r.RemoteAddr, n, string(buf[:n]))
-			log.Traceln(buf)
+			if l != "" {
+				log.Debugf("[HTTP] Received log from %s. buf length: %d, string: %s", r.RemoteAddr, n, string(buf[:n]))
+				log.Traceln(buf)
 
-			log.Debugf("[HTTP] prependHttpStrBytes len: %d, string: %s", len(f.prependHttpStr), f.prependHttpStr)
-			log.Traceln(f.prependHttpStrBytes)
+				log.Debugf("[HTTP] prependHttpStrBytes len: %d, string: %s", len(f.prependHttpStr), f.prependHttpStr)
+				log.Traceln(f.prependHttpStrBytes)
 
-			log.Debugf("[HTTP] Prepending prependHttpStrBytes to buf")
-			newbuf := append([]byte(f.prependHttpStrBytes), buf[:n]...)
-			log.Debugf("[HTTP] newbuf len: %d, string: %s", len(newbuf), string(newbuf))
-			log.Traceln(newbuf)
-			go f.handle(newbuf, nil, r.RemoteAddr)
+				log.Debugf("[HTTP] Prepending prependHttpStrBytes to buf")
+				newbuf := append([]byte(f.prependHttpStrBytes), buf[:n]...)
+				log.Debugf("[HTTP] newbuf len: %d, string: %s", len(newbuf), string(newbuf))
+				log.Traceln(newbuf)
+				go f.handle(newbuf, nil, r.RemoteAddr)
+			}
 		}
 	default:
 		log.Debugf("Invalid request")
