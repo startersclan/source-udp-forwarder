@@ -45,6 +45,9 @@ func TestHandleConnection(t *testing.T) {
 		},
 	}
 	conn, err := d.Dial("udp", listenAddr)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer conn.Close()
 	fmt.Fprintf(conn, log)
 	fmt.Fprintf(conn, log)
@@ -132,6 +135,9 @@ func TestForwardedUdp(t *testing.T) {
 	expectedLog := prependStr + log
 	addr, err := net.ResolveUDPAddr("udp", forwardAddr)
 	connD, err := net.ListenUDP("udp", addr)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer connD.Close()
 	buf := make([]byte, 1024)
 	c := 0
@@ -166,9 +172,10 @@ func TestForwardedHttp(t *testing.T) {
 	// Gameserver sends 3 logs (each with 2 lines) to the forwarder, each to forwarder
 	log := "10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
 	logs := []string{
-		log + "\n" + log,
-		log + "\n" + log,
-		log + "\n" + log,
+		log + "\n" + log + "\n", // Multline log
+		log,                     // Single line log
+		"\n",                    // Empty line
+		" \r\n",                 // Whitespace line
 	}
 	go func(tb testing.TB) {
 		time.Sleep(time.Millisecond * 300) // Wait for daemon to be up
@@ -179,9 +186,12 @@ func TestForwardedHttp(t *testing.T) {
 	}(t)
 
 	// Daemon receives log from forwarder
-	expectedLog := fmt.Sprintf("%s%s%s\x00", prependStr, "L ", log)
+	expectedLog := fmt.Sprintf("%s%s%s", prependStr, "L ", log)
 	addr, err := net.ResolveUDPAddr("udp", forwardAddr)
 	connD, err := net.ListenUDP("udp", addr)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer connD.Close()
 	buf := make([]byte, 1024)
 	c := 0
@@ -195,7 +205,7 @@ func TestForwardedHttp(t *testing.T) {
 			t.Fatalf("Unexpected log:\nGot:\t\t%s\nExpected:\t%s\n", msg, expectedLog)
 		}
 		c++
-		if c == len(logs)*2 {
+		if c == 3 { // Should only receive 3 log lines
 			return
 		}
 	}
