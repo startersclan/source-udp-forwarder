@@ -106,7 +106,7 @@ func TestForwardedUdp(t *testing.T) {
 	}
 	defer forwarder.Close()
 
-	// Gameserver sends 3 log lines to forwarder
+	// Gameserver sends log lines to forwarder
 	log := "L 10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
 	logs := []string{
 		log,
@@ -169,11 +169,12 @@ func TestForwardedHttp(t *testing.T) {
 	}
 	defer forwarder.Close()
 
-	// Gameserver sends 3 logs (each with 2 lines) to the forwarder, each to forwarder
+	// Gameserver sends log lines to the forwarder
 	log := "10/11/2019 - 23:41:02: Started map \"awp_city\" (CRC \"-2134348459\")"
 	logs := []string{
 		log + "\n" + log + "\n", // Multline log
 		log,                     // Single line log
+		"L " + log,              // Single line log with 'L '
 		"\n",                    // Empty line
 		" \r\n",                 // Whitespace line
 	}
@@ -205,7 +206,7 @@ func TestForwardedHttp(t *testing.T) {
 			t.Fatalf("Unexpected log:\nGot:\t\t%s\nExpected:\t%s\n", msg, expectedLog)
 		}
 		c++
-		if c == 3 { // Should only receive 3 log lines
+		if c == 4 { // Should only receive 4 log lines
 			return
 		}
 	}
