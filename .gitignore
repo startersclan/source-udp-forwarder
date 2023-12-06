@@ -1,4 +1,6 @@
-/.go
+/.*
+/!.github
+/!.vscode
 Dockerfile.*
 !Dockerfile.tmpl
 coverage.txt

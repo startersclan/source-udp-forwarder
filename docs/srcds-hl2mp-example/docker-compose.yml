@@ -59,7 +59,7 @@ services:
   # The daemon's proxy_key secret can only be setup in the HLStatsX:CE Web Admin Panel and not via env vars
   # See: https://github.com/startersclan/docker-hlstatsxce-daemon
   daemon:
-    image: startersclan/hlstatsx-community-edition:1.9.0-daemon
+    image: startersclan/hlstatsx-community-edition:1.11.0-daemon
     ports:
       - 27500:27500/udp   # For external servers to send logs to the daemon
     networks:
@@ -81,4 +81,3 @@ networks:
 
 volumes:
   dns-volume:
-  db-volume:
