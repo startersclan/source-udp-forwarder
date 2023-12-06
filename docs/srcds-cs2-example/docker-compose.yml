@@ -1,7 +1,7 @@
 # In this example, you will see that Counter-Strike 2 server sends its HTTP logs to `source-udp-forwarder` which then proxies (forwards) logs to the HLStatsX:CE perl daemon.
 version: '2.2'
 services:
-  # 1. Counter-Strike 2 gameserver sends UDP logs to source-udp-forwarder
+  # 1. Counter-Strike 2 gameserver sends HTTP logs to source-udp-forwarder
   # See: https://github.com/startersclan/docker-sourceservers
   cs2:
     image: sourceservers/cs2:latest
@@ -15,13 +15,15 @@ services:
     stdin_open: true
     tty: true
     stop_signal: SIGKILL
+    depends_on:
+      - source-udp-forwarder
     entrypoint:
       - /bin/bash
     command:
       - -c
       - |
           set -eu
-          exec game/bin/linuxsteamrt64/cs2 -dedicated -game cs2 -port 27015 +game_type 0 +game_mode 1 +mapgroup mg_active +map de_dust2 +log on +logaddress_add_http "http://$$( cat /dns/source-udp-forwarder ):26999"
+          exec game/bin/linuxsteamrt64/cs2 -dedicated -port 27015 +game_type 0 +game_mode 1 +mapgroup mg_active +map de_dust2 +rcon_password password +log on +logaddress_add_http "http://source-udp-forwarder:26999"
 
   # 2. source-udp-forwarder proxy forwards gameserver logs to the daemon
   # See: https://github.com/startersclan/source-udp-forwarder
@@ -41,23 +43,12 @@ services:
       - default
     depends_on:
       - daemon
-    entrypoint:
-      - /bin/sh
-    command:
-      - -c
-      - |
-          set -eu
-
-          echo "Outputting my IP address"
-          ip addr show eth0 | grep 'inet ' | awk '{print $$2}' | cut -d '/' -f1 | tee /dns/source-udp-forwarder
-
-          exec /source-udp-forwarder
 
   # 3. HLStatsX:CE perl daemon accepts the gameserver logs. Gameserver Logs are parsed and stats are recorded
   # The daemon's proxy_key secret can only be setup in the HLStatsX:CE Web Admin Panel and not via env vars
   # See: https://github.com/startersclan/docker-hlstatsxce-daemon
   daemon:
-    image: startersclan/hlstatsx-community-edition:1.9.0-daemon
+    image: startersclan/hlstatsx-community-edition:1.11.0-daemon
     ports:
       - 27500:27500/udp   # For external servers to send logs to the daemon
     networks:
@@ -79,4 +70,3 @@ networks:
 
 volumes:
   dns-volume:
-  db-volume:
