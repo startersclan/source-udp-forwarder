@@ -46,7 +46,7 @@ services:
 
   # 3. HLStatsX:CE perl daemon accepts the gameserver logs. Gameserver Logs are parsed and stats are recorded
   # The daemon's proxy_key secret can only be setup in the HLStatsX:CE Web Admin Panel and not via env vars
-  # See: https://github.com/startersclan/docker-hlstatsxce-daemon
+  # See: https://github.com/startersclan/hlstatsx-community-edition
   daemon:
     image: startersclan/hlstatsx-community-edition:1.11.0-daemon
     ports:
